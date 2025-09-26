@@ -33,234 +33,125 @@
 
 
 
-API: Endpoint Overview
-
-General Endpoints (for all users)
+## API: Endpoint Overview
 
 
-1. POST /api/auth/register
-     - Request Body
-       - ```json
-         
-           {
-              "email": "user@example.com",
-              "password": "securepassword123",
-              "firstName": "Иван",
-              "lastName": "Петров",
-              "phone": "+37529234567",
-              "role": "client"
-           }
-      - Response: Status 201 on successful registration.
+### 1. Аутентификация и управление профилем
 
 
+- `POST /auth/register`  
+    **Описание**: Регистрация нового пользователя. В теле запроса передается `role` ('owner' или 'sitter'), на основе которого создается запись в соответствующей таблице (`owners` или `sitters`).
+    
+- `POST /auth/login`  
+    **Описание**: Аутентификация пользователя по email и паролю. Возвращает JWT токен для последующих запросов.
+    
+- `GET /profile`  
+    **Описание**: Получение информации о текущем аутентифицированном пользователе (из таблиц `users`, `owners`/`sitters`).
+    
+- `PUT /profile`  
+    **Описание**: Обновление базовой информации своего профиля.
 
-
-2. POST /api/auth/login
- 
-    - Request Body
-       - ```json
-        
-            {
-              "email": "user@example.com",
-              "password": "password123"
-            }
-
-    - Response:
-      - ```json {
-        
-        {
-        "token": "jwt-token"
-        }
-
-3. GET /api/pets
-   - Описание: Возвращает список всех питомцев текущего пользователя.
-   - Response:
-       - ```json
-      
-            [
-              {
-                "id": 1,
-                "name": "Барсик",
-                "type": "cat",
-                "breed": "Мейн-кун",
-                "age": 3,
-                "weight": 5.5,
-                "photoUrl": "/pets/barsik.jpg"
-              },
-              {
-                "id": 2,
-                "name": "Шарик",
-                "type": "dog", 
-                "breed": "Лабрадор",
-                "age": 5,
-                "weight": 25.0,
-                "photoUrl": "/pets/sharik.jpg"
-              }
-          ]
-
-4. POST /api/pets
-   - Добавляет нового питомца для текущего пользователя.
-   - Request:
-       - ```json
-       
-           {
-              "name": "Мурка",
-              "type": "cat",
-              "breed": "Дворовая",
-              "age": 2,
-              "weight": 4.0,
-              "description": "Спокойная кошка",
-              "photoUrl": "/pets/murka.jpg"
-            }
-    - Response:
-       - ```json
-        
-           {
-            "id": 3,
-            "name": "Мурка",
-            "type": "cat",
-            "breed": "Дворовая",
-            "age": 2,
-            "weight": 4.0,
-            "description": "Спокойная кошка",
-            "photoUrl": "/pets/murka.jpg",
-            "ownerId": 1
-          }
-      
-
-5. POST /api/sitters/search
-   - Описание: Ищет доступных ситтеров по заданным критериям.
-   - REquest:
-       - ```json
-         
-                   {
-                      "serviceType": "walking",
-                      "date": "2024-01-15",
-                      "timeFrom": "10:00",
-                      "timeTo": "18:00",
-                      "latitude": 55.755826,
-                      "longitude": 37.617300,
-                      "radiusKm": 5,
-                      "minRating": 4.0
-                   }
-        
-   - Response:
-       - ```json
-          
-             {"sitters": [
-              {
-                "id": 2,
-                "firstName": "Мария",
-                "lastName": "Сидорова",
-                "rating": 4.8,
-                "reviewsCount": 24,
-                "hourlyRate": 800,
-                "distanceKm": 1.2,
-                "services": [
-                  {
-                    "id": 1,
-                    "name": "Выгул 30 мин",
-                          "price": 400
-                  }
-                ]
-              }
-            ]}
+### 2. Sitters
 
 
 
-6. GET /api/sitters/{id}
-   - Описание: Возвращает подробную информацию о ситтере
-   - Response:
-       - ```json
-         
-         {
-            "id": 2,
-            "firstName": "Мария",
-            "lastName": "Сидорова",
-            "email": "sitter@example.com",
-            "phone": "+79167654321",
-            "experience": "Опыт работы с животными 5 лет",
-            "rating": 4.8,
-            "reviewsCount": 24,
-            "hourlyRate": 800,
-            "isAvailable": true,
-            "services": [
-              {
-                "id": 1,
-                "name": "Выгул 30 мин",
-                "price": 400
-              },
-              {
-                "id": 2,
-                "name": "Выгул 60 мин", 
-                "price": 700
-              }
-            ]
-         }
-
-
-7. POST /api/orders
-   - Описание: Создает новый заказ на услуги ситтера
-   - REquest:
-       - ```json
-     
-         {
-            "sitterId": 2,
-            "petId": 1,
-            "serviceId": 1,
-            "startTime": "2024-01-15T10:00:00Z",
-            "endTime": "2024-01-15T11:00:00Z",
-            "specialNotes": "Кот боится громких звуков"
-          }
-    - Response:
-       - ```json
-
-         {
-            "id": 1,
-            "status": "requested",
-            "clientId": 1,
-            "sitterId": 2,
-            "petId": 1,
-            "serviceId": 1,
-            "startTime": "2024-01-15T10:00:00Z",
-            "endTime": "2024-01-15T11:00:00Z",
-            "totalPrice": 400,
-            "createdAt": "2024-01-10T14:30:00Z"
-          }
-8. GET /api/orders
-   - Описание: Возвращает список заказов текущего пользователя
-   - Response:
-       - ```json
-         [
-            {
-              "id": 1,
-              "status": "completed",
-              "sitterName": "Мария Сидорова",
-              "petName": "Барсик",
-              "serviceName": "Выгул 30 мин",
-              "startTime": "2024-01-15T10:00:00Z",
-              "totalPrice": 400
-            }
-         ]
-9. POST /api/orders/{id}/review
-    - Описание: Добавляет отзыв к завершенному заказу
-    - Request:
-       - ```json
-
-         {
-          "rating": 5,
-          "comment": "Отличный ситтер! Кот очень доволен."
-        }
-    - Response:
-       - ```json
+- `GET /sitters`  
+    **Описание**: Публичный поиск ситтеров с возможностью фильтрации по геолокации, типу услуг, рейтингу, цене и датам доступности.
+    
+- `GET /sitters/{userId}`  
+    **Описание**: Получение детального публичного профиля ситтера, включая его услуги с ценами, средний рейтинг и отзывы.
+    
+- `PUT /sitters/me/profile`  
+    **Описание**: Ситтер обновляет свой профессиональный профиль (опыт, часовая ставка и т.д.).
+    
+- `POST /sitters/me/services`  
+    **Описание**: Ситтер добавляет или обновляет услуги, которые он предоставляет, и устанавливает на них цены.
+    
+- `GET /sitters/me/availability`  
+    **Описание**: Ситтер получает свой календарь доступности.
+    
+- `POST /sitters/me/availability`  
+    **Описание**: Ситтер добавляет или обновляет временные слоты, когда он доступен для работы.
   
-         {
-            "id": 1,
-            "orderId": 1,
-            "rating": 5,
-            "comment": "Отличный ситтер! Кот очень доволен.",
-            "createdAt": "2024-01-16T12:00:00Z"
-         } 
-+сообщения
+### 3. Owners and Pets
+
+- `GET /owners/me/pets`  
+    **Описание**: Владелец получает список своих питомцев.
+    
+- `POST /owners/me/pets`  
+    **Описание**: Владелец добавляет нового питомца в свой профиль.
+    
+- `GET /owners/me/pets/{petId}`  
+    **Описание**: Получение информации о конкретном питомце.
+    
+- `PUT /owners/me/pets/{petId}`  
+    **Описание**: Владелец обновляет информацию о своем питомце.
+    
+- `DELETE /owners/me/pets/{petId}`  
+    **Описание**: Владелец удаляет питомца из своего профиля.
+    
+
+### 4. Bookings and orders
 
 
+- `POST /bookings`  
+    **Описание**: Владелец создает новый запрос на бронирование. В теле запроса указывается `sitter_id`, `pet_id`, `service_id`, `start_time`, `end_time`. Статус по умолчанию — `pending`.
+    
+- `GET /bookings`  
+    **Описание**: Получение списка своих бронирований (как для владельца, так и для ситтера). Можно фильтровать по статусу (`pending`, `confirmed`, `completed` и т.д.).
+    
+- `GET /bookings/{bookingId}`  
+    **Описание**: Получение детальной информации о конкретном бронировании.
+    
+- `PATCH /bookings/{bookingId}/confirm`  
+    **Описание**: Ситтер подтверждает бронирование. Статус меняется на `confirmed`.
+    
+- `PATCH /bookings/{bookingId}/cancel`  
+    **Описание**: Отмена бронирования (может быть инициирована как владельцем, так и ситтером). Статус меняется на `cancelled_by_owner` или `cancelled_by_sitter`.
+    
+
+### 5. Payments and reviews
+
+
+- `POST /bookings/{bookingId}/payments`  
+    **Описание**: Инициация процесса оплаты для подтвержденного бронирования. Интегрируется с платежной системой (например, Stripe).
+    
+- `POST /webhooks/payments`  
+    **Описание**: Вебхук для получения уведомлений от платежной системы об успешной оплате или ошибке. Обновляет `payment_status` в таблице `bookings`.
+    
+- `POST /bookings/{bookingId}/reviews`  
+    **Описание**: Владелец оставляет отзыв и выставляет рейтинг после завершения бронирования (`completed`).
+    
+- `GET /sitters/{userId}/reviews`  
+    **Описание**: Публичный эндпоинт для просмотра всех отзывов о конкретном ситтере.
+    
+
+### 6. Взаимодействие во время заказа
+
+
+- `POST /bookings/{bookingId}/tracking`  
+    **Описание**: Ситтер начинает, обновляет или завершает трекинг прогулки, отправляя координаты.
+    
+- `GET /bookings/{bookingId}/tracking`  
+    **Описание**: Владелец получает данные о маршруте прогулки в реальном времени или после ее завершения.
+    
+- `GET /conversations`  
+    **Описание**: Получение списка всех диалогов пользователя.
+    
+- `GET /conversations/{userId}`  
+    **Описание**: Получение истории сообщений с конкретным пользователем.
+    
+- `POST /conversations/{userId}/messages`  
+    **Описание**: Отправка сообщения в диалог. Можно привязать к конкретному бронированию, передав `bookingId`.
+    
+
+### 7. Справочники и администрирование
+
+- `GET /services`  
+    **Описание**: Получение списка всех услуг и их категорий, доступных на платформе.
+    
+- `POST /admin/services`  
+    **Описание**: (Только для администратора) Создание новой услуги.
+    
+- `PATCH /admin/sitters/{userId}/verify`  
+    **Описание**: (Только для администратора) Верификация профиля ситтера.
