@@ -27,6 +27,9 @@
 - Администратор (Admin)
 - Клиент (Owner)
 - Исполнитель (Sitter)
+## Сценарии
+[use-case diagrams](./UseCases-diagram.png)
+
 
 ## Схема БД
 [Схема БД](./sql/db_v2.svg)
