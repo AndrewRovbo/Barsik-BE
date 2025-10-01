@@ -5,32 +5,30 @@ CREATE TABLE `users` (
   `phone_number` varchar(255) UNIQUE,
   `first_name` varchar(255),
   `last_name` varchar(255),
-  `avatar_url` varchar(255),
-  `address` text,
-  `created_at` datetime,
-  `updated_at` datetime
+  `avatar_url` varchar(500),
+  `address` json,
+  `created_at` timestamp,
+  `updated_at` timestamp
 );
 
 CREATE TABLE `owners` (
   `user_id` int PRIMARY KEY,
-  `about_me` text,
+  `about_me` varchar(1000),
   `is_verified` boolean DEFAULT false
 );
 
 CREATE TABLE `sitters` (
   `user_id` int PRIMARY KEY,
   `experience_summary` text,
-  `hourly_rate` decimal,
   `average_rating` decimal DEFAULT 0,
   `reviews_count` int DEFAULT 0,
-  `is_verified` boolean DEFAULT false,
-  `is_available` boolean DEFAULT true
+  `is_verified` boolean DEFAULT false
 );
 
 CREATE TABLE `services` (
   `id` int PRIMARY KEY AUTO_INCREMENT,
   `name` varchar(255),
-  `description` text,
+  `description` varchar(500),
   `category` varchar(255)
 );
 
@@ -44,8 +42,8 @@ CREATE TABLE `sitter_services` (
 CREATE TABLE `availability` (
   `id` int PRIMARY KEY AUTO_INCREMENT,
   `sitter_user_id` int,
-  `start_time` datetime,
-  `end_time` datetime
+  `start_time` timestamp,
+  `end_time` timestamp
 );
 
 CREATE TABLE `pets` (
@@ -56,7 +54,7 @@ CREATE TABLE `pets` (
   `breed` varchar(255),
   `age` tinyint,
   `gender` varchar(255),
-  `description` text,
+  `description` varchar(500),
   `photo_url` varchar(255)
 );
 
@@ -68,11 +66,11 @@ CREATE TABLE `bookings` (
   `service_id` int,
   `booking_status` varchar(255) COMMENT 'pending, confirmed, cancelled_by_owner, cancelled_by_sitter, completed',
   `payment_status` varchar(255) COMMENT 'unpaid, paid, refunded',
-  `start_time` datetime,
-  `end_time` datetime,
+  `start_time` timestamp,
+  `end_time` timestamp,
   `total_price` decimal,
   `special_notes` text,
-  `created_at` datetime
+  `created_at` timestamp
 );
 
 CREATE TABLE `reviews` (
@@ -81,8 +79,8 @@ CREATE TABLE `reviews` (
   `owner_user_id` int,
   `sitter_user_id` int,
   `rating` tinyint,
-  `comment` text,
-  `created_at` datetime
+  `comment` varchar(500),
+  `created_at` timestamp
 );
 
 CREATE TABLE `payments` (
@@ -92,14 +90,14 @@ CREATE TABLE `payments` (
   `status` varchar(255) COMMENT 'pending, succeeded, failed',
   `payment_method` varchar(255),
   `transaction_id` varchar(255),
-  `created_at` datetime
+  `created_at` timestamp
 );
 
 CREATE TABLE `walk_trackings` (
   `id` int PRIMARY KEY AUTO_INCREMENT,
   `booking_id` int,
-  `start_time` datetime,
-  `end_time` datetime,
+  `start_time` timestamp,
+  `end_time` timestamp,
   `path_geojson` json,
   `distance_meters` int
 );
@@ -111,7 +109,7 @@ CREATE TABLE `messages` (
   `booking_id` int,
   `content` text,
   `is_read` boolean DEFAULT false,
-  `created_at` datetime
+  `created_at` timestamp
 );
 
 ALTER TABLE `owners` ADD FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
