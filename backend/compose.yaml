@@ -1,0 +1,32 @@
+services:
+  mysql:
+    image: mysql:latest
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: barsikdb
+      MYSQL_ROOT_PASSWORD: verysecret
+      MYSQL_USER: test_user1
+      MYSQL_PASSWORD: 1234
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./init/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - data_db:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -pverysecret"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    
+  app:
+    build: .
+    container_name: backend
+    ports: 
+      - "8090:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+volumes:
+  data_db:
