@@ -40,7 +40,12 @@
 ## Схема БД
 [Схема БД](./sql/db_v3.svg)
 
-
+## Сьорка проекта
+(пока в ветке дев)
+необходим докер
+из директории проекта
+cd ./backend
+docker compose up --build
 
 ## API: Endpoint Overview
 
@@ -59,7 +64,6 @@
               "firstName": "John",
               "lastName": "Smith",
               "phone": "+37529234567",
-              "role": "owner"
            }
       - Response: Status 201 on successful registration.   
 - `POST /auth/login`  
