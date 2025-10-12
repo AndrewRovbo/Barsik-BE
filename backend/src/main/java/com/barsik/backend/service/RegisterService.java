@@ -1,12 +1,12 @@
 package com.barsik.backend.service;
 
-import com.barsik.backend.api.DTO.request.UserRegistrationRequest;
-import com.barsik.backend.api.DTO.response.UserResponse;
-import com.barsik.backend.entity.User;
-import com.barsik.backend.service.UserService;
-import org.springframework.http.ResponseEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import com.barsik.backend.api.DTO.request.UserRegistrationRequest;
+import com.barsik.backend.api.DTO.request.UserRole;
+import com.barsik.backend.api.DTO.response.UserResponse;
+import com.barsik.backend.entity.User;
 
 
 
@@ -39,6 +39,7 @@ public class RegisterService {
             savedUser.getLastName(),
             savedUser.getPhoneNumber(),
             savedUser.getAvatarUrl(),
+            UserRole.OWNER,
             savedUser.getCreatedAt(),
             savedUser.getUpdatedAt()
         );
@@ -48,4 +49,3 @@ public class RegisterService {
         return "User logged in";
     }
 }
-

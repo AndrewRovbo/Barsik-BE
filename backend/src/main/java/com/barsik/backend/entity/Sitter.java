@@ -9,7 +9,11 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.MapsId;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
 
+@Setter
+@Getter
 @Entity
 @Table(name = "sitters")
 public class Sitter {
@@ -43,7 +47,10 @@ public class Sitter {
         this.user = user;
     }
 
-    
+    public Sitter(User user) {
+        this.user = user;
+    }
+
 
     //@OneToMany(mappedBy = "sitter", cascade = CascadeType.ALL, orphanRemoval = true)
     //private List<SitterService> offeredServices;

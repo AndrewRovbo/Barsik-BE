@@ -33,13 +33,14 @@ public class Owner {
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Pet> pets;
 
+    
     public Owner(){};
-        public Owner(User user) {
+    public Owner(User user) {
         this.user = user;
         this.pets = new ArrayList<>();
     }
 
-   
+
     public Owner(User user, String aboutMe, Boolean isVerified) {
         this.user = user;
         this.aboutMe = aboutMe;

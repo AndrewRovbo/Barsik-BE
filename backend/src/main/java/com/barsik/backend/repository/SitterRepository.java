@@ -5,5 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.barsik.backend.entity.Sitter;
 
 public interface SitterRepository extends JpaRepository<Sitter, Long>{
-    
+    boolean existsByUserId(Long userId);
 }
