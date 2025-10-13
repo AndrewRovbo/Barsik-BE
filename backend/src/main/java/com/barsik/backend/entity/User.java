@@ -1,6 +1,10 @@
 package com.barsik.backend.entity;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.List;
+
+import org.springframework.security.core.GrantedAuthority;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -27,13 +31,13 @@ public class User {
     @Column(nullable = false)
     private String passwordHash;
 
-    @Column(name  = "phone_number", nullable = false)
+    @Column(name  = "phone_number")
     private String phoneNumber;
 
-    @Column(name = "fisrt_name", nullable = false)
+    @Column(name = "fisrt_name")
     private String firstName;
     
-    @Column(name = "last_name",nullable = false)
+    @Column(name = "last_name")
     private String lastName;
 
 
@@ -138,7 +142,7 @@ public class User {
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
     }
-     public Owner getOwner() { return owner; }
+    public Owner getOwner() { return owner; }
     public void setOwner(Owner owner) { this.owner = owner; }
 
     public Sitter getSitter() { return sitter; }
@@ -153,6 +157,29 @@ public class User {
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
+    }
+
+
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of();
+    }
+
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+
+    public boolean isEnabled() {
+        return true;
     }
 }
 

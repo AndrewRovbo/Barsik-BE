@@ -1,6 +1,5 @@
 package com.barsik.backend.service;
 
-import java.util.Optional;
 import java.util.function.Consumer;
 
 import org.springframework.stereotype.Service;
@@ -17,8 +16,8 @@ public class UserService {
     public User saveUser(User user){
         return userRepository.save(user);
     }
-    public Optional<User> findByEmail(String email) {
-        return userRepository.findByEmail(email);
+    public User findByEmail(String email) {
+        return userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("Owner profile not found"));
     }
     public User updateUser(Long userId, UserUpdateRequest dto){
         User user = userRepository.findById(userId)

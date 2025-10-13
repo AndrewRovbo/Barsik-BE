@@ -8,16 +8,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.barsik.backend.api.DTO.request.FullProfileResponse;
 import com.barsik.backend.api.DTO.request.OwnerProfileUpdateRequest;
 import com.barsik.backend.api.DTO.request.SitterProfileUpdateRequest;
 import com.barsik.backend.api.DTO.request.UserRole;
 import com.barsik.backend.api.DTO.request.UserUpdateRequest;
+import com.barsik.backend.api.DTO.response.FullProfileResponse;
 import com.barsik.backend.entity.User;
 import com.barsik.backend.service.ProfileService;
 
 @RestController
-@RequestMapping("/profile")
+@RequestMapping("/api/profile")
 public class ProfileController {
     @Autowired
     private ProfileService profileService;

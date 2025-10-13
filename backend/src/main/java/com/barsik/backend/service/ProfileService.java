@@ -4,11 +4,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.barsik.backend.api.DTO.request.FullProfileResponse;
 import com.barsik.backend.api.DTO.request.OwnerProfileUpdateRequest;
 import com.barsik.backend.api.DTO.request.SitterProfileUpdateRequest;
 import com.barsik.backend.api.DTO.request.UserRole;
 import com.barsik.backend.api.DTO.request.UserUpdateRequest;
+import com.barsik.backend.api.DTO.response.FullProfileResponse;
 import com.barsik.backend.entity.Owner;
 import com.barsik.backend.entity.Sitter;
 import com.barsik.backend.entity.User;
