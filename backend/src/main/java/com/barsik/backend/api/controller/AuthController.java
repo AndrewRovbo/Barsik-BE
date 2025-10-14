@@ -1,59 +1,108 @@
 package com.barsik.backend.api.controller;
 
 
+import java.math.BigDecimal;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.barsik.backend.api.DTO.request.LogInRequest;
-import com.barsik.backend.api.DTO.request.RegistrationRequestShort;
-import com.barsik.backend.api.DTO.response.FullProfileResponse;
-import com.barsik.backend.service.RegisterService;
+import com.barsik.backend.api.DTO.request.RegistrationRequestLong;
+import com.barsik.backend.api.DTO.request.UserRole;
+import com.barsik.backend.api.DTO.response.LogInResponse;
+import com.barsik.backend.entity.Owner;
+import com.barsik.backend.entity.Sitter;
+import com.barsik.backend.entity.User;
+import com.barsik.backend.repository.OwnerRepository;
+import com.barsik.backend.repository.SitterRepository;
+import com.barsik.backend.repository.UserRepository;
+import com.barsik.backend.security.JwtUtil;
+
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/auth")
 public class AuthController {
+
+    
+    @Autowired private AuthenticationManager authenticationManager;
+    @Autowired private OwnerRepository ownerRepository;
+    @Autowired private SitterRepository sitterRepository;
+    @Autowired private UserRepository userRepository;
+    @Autowired private PasswordEncoder encoder;
+    @Autowired private JwtUtil jwtUtil;
+
+
+
+    
+
     /*
      * Sign in — авторизация существующего пользователя; Sign up — регистрация нового пользователя
-     */
-
-    @Autowired private AuthenticationManager authenticationManager;
-    @Autowired private RegisterService registerService;
-
-    /*
+    */
+    
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LogInRequest logInRequest) {
-        //TODO: process POST request
-        try {
-            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(logInRequest.getEmail(), logInRequest.getPassword()));
-            //final UserDetails userDetails = new UserDetails();
-            return ResponseEntity.ok("Login success :" );//+userDetails.getEmail();
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
-        }
-    }
-    */
 
+
+
+        Authentication authentication = authenticationManager.authenticate(
+            new UsernamePasswordAuthenticationToken(logInRequest.getEmail(), logInRequest.getPassword())
+        );
+
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+
+        
+        User user = userRepository.findByEmail(userDetails.getUsername())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        List<String> roles = userDetails.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .map(r -> r.replace("ROLE_", "")) // ROLE_OWNER → OWNER
+                .toList();
+
+        // Исправленный вызов с userId
+        String jwt = jwtUtil.generateToken(userDetails.getUsername(), user.getId(), roles);
+
+
+        return ResponseEntity.ok(new LogInResponse(jwt, userDetails.getUsername(), roles));
+    }
+    
+/*
+
+*/
+    
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody RegistrationRequestShort request) {
-        FullProfileResponse response = registerService.register(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
-    }
-
-    @PostMapping("/login")
-    public ResponseEntity<?> login(LogInRequest request) {
-        HttpStatus httpStatus;
-        try {
-            httpStatus = registerService.login(request); 
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("wrong smth in email or password");
+    public String register(@RequestBody RegistrationRequestLong request) {
+        if(userRepository.existsByEmail(request.getEmail())) return "User already exists";
+        User user = new User(request.getFirstName(), request.getLastName(), request.getEmail(), encoder.encode(request.getPassword()), request.getPhoneNumber());
+        userRepository.save(user);
+        if(request.getRole() == UserRole.OWNER) {
+            Owner owner = new Owner();
+            owner.setUser(user);
+            ownerRepository.save(owner);
+        } else if(request.getRole() == UserRole.SITTER) {
+            Sitter sitter = new Sitter();
+            sitter.setUser(user);
+            sitter.setAverageRating(BigDecimal.ZERO);
+            sitter.setReviewsCount(0);
+            sitterRepository.save(sitter);
         }
-        return ResponseEntity.status(httpStatus).build();
+        return "User registered";
+
+       
+        //return ResponseEntity.status(404).build();
     }
 
 }

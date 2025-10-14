@@ -1,6 +1,6 @@
 package com.barsik.backend.config;
 
-
+/*
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.Contact;
@@ -22,4 +22,4 @@ public class OpenApiConfig {
                                 .email("support@barsik.example")))
                 ;
     }
-}
+}*/

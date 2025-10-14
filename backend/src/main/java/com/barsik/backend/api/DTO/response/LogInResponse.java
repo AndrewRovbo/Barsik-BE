@@ -1,23 +1,20 @@
 package com.barsik.backend.api.DTO.response;
 
+import java.util.List;
+
 import com.barsik.backend.api.DTO.request.UserRole;
+import com.fasterxml.jackson.annotation.JsonAlias;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.Setter;
 
-
+@AllArgsConstructor
 @Getter
+@Setter
 public class LogInResponse {
+    @JsonAlias("token")
     private String token;
-    private String tokenType;
-    private String email;
-    private String firstName;
-    private UserRole role;
-
-    public LogInResponse(String token, String tokenType, String email, String firstName, UserRole role) {
-        this.token = token;
-        this.tokenType = tokenType;
-        this.email = email;
-        this.firstName = firstName;
-        this.role = role;
-    }
+    private String Username;
+    private List<String> roles;
 }

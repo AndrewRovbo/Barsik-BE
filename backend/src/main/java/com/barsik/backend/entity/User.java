@@ -46,8 +46,9 @@ public class User {
 
     private String address;
 
-    @Column(name = "created_at",nullable = false)
+    @Column(updatable = false, name = "created_at",nullable = false)
     private LocalDateTime createdAt;
+    
     @Column(name = "updated_at",nullable = false)
     private LocalDateTime updatedAt;
 

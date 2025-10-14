@@ -20,7 +20,5 @@ public class RegistrationRequestLong {
     private String phoneNumber;
     private String firstName;
     private String lastName;
-    private String avatarUrl;
-    private String address;
     private UserRole role;
 }
