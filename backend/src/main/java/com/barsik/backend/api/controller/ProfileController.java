@@ -1,11 +1,12 @@
 package com.barsik.backend.api.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.barsik.backend.api.DTO.request.OwnerProfileUpdateRequest;
@@ -14,20 +15,25 @@ import com.barsik.backend.api.DTO.request.UserRole;
 import com.barsik.backend.api.DTO.request.UserUpdateRequest;
 import com.barsik.backend.api.DTO.response.FullProfileResponse;
 import com.barsik.backend.entity.User;
+import com.barsik.backend.security.SecurityUtil;
 import com.barsik.backend.service.ProfileService;
+
 
 @RestController
 @RequestMapping("/api/profile")
 public class ProfileController {
-    @Autowired
-    private ProfileService profileService;
+    @Autowired private ProfileService profileService;
+    @Autowired private SecurityUtil securityUtil;
+
 
     /**
      * Получить полный профиль пользователя по ID
      */
     @GetMapping
-    public FullProfileResponse getFullProfile(@RequestParam Long userId) {
-        return profileService.getFullProfile(userId);
+    public ResponseEntity<FullProfileResponse> getFullProfile() {
+        Long userId = securityUtil.getCurrentUserId();
+        FullProfileResponse profile = profileService.getFullProfile(userId);
+        return ResponseEntity.ok(profile);
     }
 
     /**
@@ -35,11 +41,15 @@ public class ProfileController {
      * PUT /profile/user
      */
     @PutMapping("/user")
-    public User updateUser(
-            @RequestParam Long userId,
-            @RequestBody UserUpdateRequest request
+    public ResponseEntity<?> updateUser(@RequestBody UserUpdateRequest updateRequest
     ) {
-        return profileService.updateUserProfile(userId, request);
+        Long userId = securityUtil.getCurrentUserId();
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        User updatedUser = profileService.updateUserProfile(userId, updateRequest);
+        return ResponseEntity.ok(updatedUser);
     }
 
     /**
@@ -47,22 +57,26 @@ public class ProfileController {
      * PUT /profile/owner
      */
     @PutMapping("/owner")
-    public void updateOwnerProfile(
-            @RequestParam Long userId,
-            @RequestBody OwnerProfileUpdateRequest request
+    public ResponseEntity<?> updateOwnerProfile(@RequestBody OwnerProfileUpdateRequest updateRequest
     ) {
-        profileService.updateRoleProfile(userId, UserRole.OWNER, request);
+        Long userId = securityUtil.getCurrentUserId();
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        profileService.updateRoleProfile(userId, UserRole.OWNER, updateRequest);
+        return ResponseEntity.ok(updateRequest);
+        
     }
 
-    /**
-     * Обновить профиль няни
-     * PUT /profile/sitter
-     */
     @PutMapping("/sitter")
-    public void updateSitterProfile(
-            @RequestParam Long userId,
-            @RequestBody SitterProfileUpdateRequest request
+    public ResponseEntity<?> updateSitterProfile(@RequestBody SitterProfileUpdateRequest updateRequest
     ) {
-        profileService.updateRoleProfile(userId, UserRole.SITTER, request);
+        Long userId = securityUtil.getCurrentUserId();
+        if(userId == null){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        profileService.updateRoleProfile(userId, UserRole.SITTER, updateRequest);
+        return ResponseEntity.ok(updateRequest);
     }
 }

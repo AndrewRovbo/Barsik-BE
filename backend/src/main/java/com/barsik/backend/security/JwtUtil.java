@@ -23,7 +23,9 @@ public class JwtUtil {
 
     @Value("${jwt.expiration-time}")
     private Long jwtExpiration;
-
+    protected Long getJwtExpiration(){
+        return jwtExpiration;
+    }
     private SecretKey key;
 
     @PostConstruct

@@ -5,6 +5,8 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -20,7 +22,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.barsik.backend.api.DTO.request.LogInRequest;
 import com.barsik.backend.api.DTO.request.RegistrationRequestLong;
-import com.barsik.backend.api.DTO.request.UserRole;
 import com.barsik.backend.api.DTO.response.LogInResponse;
 import com.barsik.backend.entity.Owner;
 import com.barsik.backend.entity.Sitter;
@@ -30,9 +31,11 @@ import com.barsik.backend.repository.SitterRepository;
 import com.barsik.backend.repository.UserRepository;
 import com.barsik.backend.security.JwtUtil;
 
+import jakarta.servlet.http.HttpServletResponse;
+
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/auth")
 public class AuthController {
 
     
@@ -52,8 +55,7 @@ public class AuthController {
     */
     
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LogInRequest logInRequest) {
-
+    public ResponseEntity<?> login(@RequestBody LogInRequest logInRequest, HttpServletResponse response) {
 
 
         Authentication authentication = authenticationManager.authenticate(
@@ -69,14 +71,22 @@ public class AuthController {
 
         List<String> roles = userDetails.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
-                .map(r -> r.replace("ROLE_", "")) // ROLE_OWNER → OWNER
+                .map(r -> r.replace("ROLE_", ""))
                 .toList();
 
-        // Исправленный вызов с userId
         String jwt = jwtUtil.generateToken(userDetails.getUsername(), user.getId(), roles);
+        ResponseCookie jwtCookie = ResponseCookie.from("JWT_TOKEN", jwt)
+            .httpOnly(true)
+            .secure(true)// только по HTTPS
+            .path("/")// доступно на всех путях
+            .maxAge(86400)
+            .sameSite("Strict")//защита от CSRF
+            .build();
 
+    response.addHeader(HttpHeaders.SET_COOKIE, jwtCookie.toString());
 
-        return ResponseEntity.ok(new LogInResponse(jwt, userDetails.getUsername(), roles));
+    // 6. Возвращаем ответ без токена в теле
+    return ResponseEntity.ok(new LogInResponse(userDetails.getUsername(), roles));
     }
     
 /*
@@ -84,25 +94,28 @@ public class AuthController {
 */
     
     @PostMapping("/register")
-    public String register(@RequestBody RegistrationRequestLong request) {
-        if(userRepository.existsByEmail(request.getEmail())) return "User already exists";
+    public ResponseEntity<?> register(@RequestBody RegistrationRequestLong request) {
+        if(userRepository.existsByEmail(request.getEmail())){ return ResponseEntity.badRequest().body("User with this email exist");}
         User user = new User(request.getFirstName(), request.getLastName(), request.getEmail(), encoder.encode(request.getPassword()), request.getPhoneNumber());
         userRepository.save(user);
-        if(request.getRole() == UserRole.OWNER) {
-            Owner owner = new Owner();
-            owner.setUser(user);
-            ownerRepository.save(owner);
-        } else if(request.getRole() == UserRole.SITTER) {
-            Sitter sitter = new Sitter();
-            sitter.setUser(user);
-            sitter.setAverageRating(BigDecimal.ZERO);
-            sitter.setReviewsCount(0);
-            sitterRepository.save(sitter);
-        }
-        return "User registered";
 
-       
-        //return ResponseEntity.status(404).build();
+        if(null == request.getRole()) {
+            return ResponseEntity.badRequest().body("User role must be specified (OWNER or SITTER)");
+        } else switch (request.getRole()) {
+            case OWNER -> {
+                Owner owner = new Owner();
+                owner.setUser(user);
+                ownerRepository.save(owner);
+            }
+            case SITTER -> {
+                Sitter sitter = new Sitter();
+                sitter.setUser(user);
+                sitter.setAverageRating(BigDecimal.ZERO);
+                sitter.setReviewsCount(0);
+                sitterRepository.save(sitter);
+            }
+        }
+        return  ResponseEntity.status(201).body("User registered successfully");
     }
 
 }
