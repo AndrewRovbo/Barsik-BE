@@ -8,4 +8,5 @@ import com.barsik.backend.entity.Sitter;
 @Repository
 public interface SitterRepository extends JpaRepository<Sitter, Long>{
     boolean existsByUserId(Long userId);
+    //void deleteById(Long userId);
 }

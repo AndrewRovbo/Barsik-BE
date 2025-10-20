@@ -3,6 +3,7 @@ package com.barsik.backend.api.DTO.response;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Set;
 
 import com.barsik.backend.api.DTO.request.UserRole;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -22,7 +23,7 @@ public class FullProfileResponse {
     private String phoneNumber;
     private String avatarUrl;
     private String address;
-    private UserRole role;
+    private Set<UserRole> roles;
     private String aboutMe;
     private Boolean ownerVerified;
 

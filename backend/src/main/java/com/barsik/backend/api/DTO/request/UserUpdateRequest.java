@@ -1,5 +1,6 @@
 package com.barsik.backend.api.DTO.request;
 
+
 public class UserUpdateRequest {
     private String email;
     private String firstName;
@@ -7,6 +8,9 @@ public class UserUpdateRequest {
     private String phoneNumber;
     private String avatarUrl;
     private String address;
+
+    public UserUpdateRequest() {
+    }
 
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }

@@ -1,7 +1,6 @@
 package com.barsik.backend.api.controller;
 
 
-import java.math.BigDecimal;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +13,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,13 +21,10 @@ import org.springframework.web.bind.annotation.RestController;
 import com.barsik.backend.api.DTO.request.LogInRequest;
 import com.barsik.backend.api.DTO.request.RegistrationRequestLong;
 import com.barsik.backend.api.DTO.response.LogInResponse;
-import com.barsik.backend.entity.Owner;
-import com.barsik.backend.entity.Sitter;
 import com.barsik.backend.entity.User;
-import com.barsik.backend.repository.OwnerRepository;
-import com.barsik.backend.repository.SitterRepository;
 import com.barsik.backend.repository.UserRepository;
 import com.barsik.backend.security.JwtUtil;
+import com.barsik.backend.service.UserService;
 
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -40,10 +35,8 @@ public class AuthController {
 
     
     @Autowired private AuthenticationManager authenticationManager;
-    @Autowired private OwnerRepository ownerRepository;
-    @Autowired private SitterRepository sitterRepository;
+    @Autowired private UserService userService;
     @Autowired private UserRepository userRepository;
-    @Autowired private PasswordEncoder encoder;
     @Autowired private JwtUtil jwtUtil;
 
 
@@ -95,27 +88,15 @@ public class AuthController {
     
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody RegistrationRequestLong request) {
-        if(userRepository.existsByEmail(request.getEmail())){ return ResponseEntity.badRequest().body("User with this email exist");}
-        User user = new User(request.getFirstName(), request.getLastName(), request.getEmail(), encoder.encode(request.getPassword()), request.getPhoneNumber());
-        userRepository.save(user);
-
-        if(null == request.getRole()) {
-            return ResponseEntity.badRequest().body("User role must be specified (OWNER or SITTER)");
-        } else switch (request.getRole()) {
-            case OWNER -> {
-                Owner owner = new Owner();
-                owner.setUser(user);
-                ownerRepository.save(owner);
-            }
-            case SITTER -> {
-                Sitter sitter = new Sitter();
-                sitter.setUser(user);
-                sitter.setAverageRating(BigDecimal.ZERO);
-                sitter.setReviewsCount(0);
-                sitterRepository.save(sitter);
-            }
+        //if(userRepository.existsByEmail(request.getEmail())){ return ResponseEntity.badRequest().body("User with this email exist");}
+        try {
+            userService.registerUser(request);
+            return ResponseEntity.status(201).body("User registered successfully");
+        
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
-        return  ResponseEntity.status(201).body("User registered successfully");
+        
     }
 
 }

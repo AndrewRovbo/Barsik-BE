@@ -1,8 +1,11 @@
 package com.barsik.backend.api.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -18,7 +21,9 @@ import com.barsik.backend.entity.User;
 import com.barsik.backend.security.SecurityUtil;
 import com.barsik.backend.service.ProfileService;
 
+import jakarta.servlet.http.HttpServletResponse;
 
+//не удалает ситтеров и овнеров
 @RestController
 @RequestMapping("/api/profile")
 public class ProfileController {
@@ -51,6 +56,19 @@ public class ProfileController {
         User updatedUser = profileService.updateUserProfile(userId, updateRequest);
         return ResponseEntity.ok(updatedUser);
     }
+    @DeleteMapping("/user")
+    public ResponseEntity<?> deleteUser(HttpServletResponse response){
+        Long userId = securityUtil.getCurrentUserId();
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        profileService.deleteUser(userId);
+        response.addHeader(HttpHeaders.SET_COOKIE, delCookie().toString());
+        return ResponseEntity.noContent().build();
+
+    }
+
+
 
     /**
      * Обновить профиль владельца
@@ -68,6 +86,19 @@ public class ProfileController {
         return ResponseEntity.ok(updateRequest);
         
     }
+    @DeleteMapping("/owner")
+    public ResponseEntity<?> deleteOwner(HttpServletResponse response){
+        Long userId = securityUtil.getCurrentUserId();
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        profileService.deleteOwner(userId);
+        response.addHeader(HttpHeaders.SET_COOKIE, delCookie().toString());
+        return ResponseEntity.noContent().build();
+
+    }
+
+
 
     @PutMapping("/sitter")
     public ResponseEntity<?> updateSitterProfile(@RequestBody SitterProfileUpdateRequest updateRequest
@@ -79,4 +110,29 @@ public class ProfileController {
         profileService.updateRoleProfile(userId, UserRole.SITTER, updateRequest);
         return ResponseEntity.ok(updateRequest);
     }
+
+    @DeleteMapping("/sitter")
+    public ResponseEntity<?> deleteSitter(HttpServletResponse response){
+        Long userId = securityUtil.getCurrentUserId();
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        profileService.deleteSitter(userId);
+        response.addHeader(HttpHeaders.SET_COOKIE, delCookie().toString());
+        return ResponseEntity.noContent().build();
+
+    }
+
+    private ResponseCookie delCookie(){
+        ResponseCookie cookie = ResponseCookie.from("JWT_TOKEN", "")
+            .path("/")
+            .httpOnly(true)
+            .secure(true)
+            .sameSite("Strict")
+            .maxAge(0)
+            .build();
+        return cookie;
+    }
+
+
 }

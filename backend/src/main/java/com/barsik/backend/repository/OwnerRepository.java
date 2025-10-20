@@ -8,4 +8,5 @@ import com.barsik.backend.entity.Owner;
 @Repository
 public interface OwnerRepository extends JpaRepository<Owner, Long>{
     boolean existsByUserId(Long userId);
+    //void deleteById(Long userId);
 }

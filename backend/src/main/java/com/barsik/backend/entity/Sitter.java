@@ -50,6 +50,8 @@ public class Sitter {
     public Sitter(User user) {
         this.user = user;
     }
+    
+    private void setIsVerified(Boolean isVerified) { this.isVerified = isVerified; }
 
 
     //@OneToMany(mappedBy = "sitter", cascade = CascadeType.ALL, orphanRemoval = true)
