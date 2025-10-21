@@ -1,22 +1,59 @@
 services:
-  mysql:
-    image: mysql:latest
-    restart: unless-stopped
+
+  postgres:
+    image: postgres:latest
+    container_name: postgres_container
     environment:
-      MYSQL_DATABASE: barsikdb
-      MYSQL_ROOT_PASSWORD: verysecret
-      MYSQL_USER: test_user1
-      MYSQL_PASSWORD: 1234
+      POSTGRES_USER: postgres_user
+      POSTGRES_PASSWORD: postgres_password
+      POSTGRES_DB: barsikdb
+      PGDATA: /var/lib/postgresql/data/pgdata
     ports:
-      - "3306:3306"
+      - "5430:5432"
     volumes:
-      - data_db:/var/lib/mysql
+      - pgdata:/var/lib/postgresql/data/pgdata
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    command: >
+      postgres -c max_connections=1000
+               -c shared_buffers=256MB
+               -c effective_cache_size=768MB
+               -c maintenance_work_mem=64MB
+               -c checkpoint_completion_target=0.7
+               -c wal_buffers=16MB
+               -c default_statistics_target=100
     healthcheck:
-      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -pverysecret"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-      start_period: 30s
+      test: [ "CMD-SHELL", "pg_isready -U postgres_user -d postgres_db" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+    tty: true
+    #stdin_open: true
+  #mysql:
+  #  image: mysql:latest
+  #  restart: unless-stopped
+  #  environment:
+  #    MYSQL_DATABASE: barsikdb
+  #    MYSQL_ROOT_PASSWORD: verysecret
+  #    MYSQL_USER: test_user1
+  #    MYSQL_PASSWORD: 1234
+  #  ports:
+  #    - "3306:3306"
+  #  volumes:
+  #    - data_db:/var/lib/mysql
+  #  healthcheck:
+  #    test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -pverysecret"]
+  #    interval: 10s
+  #    timeout: 5s
+  #    retries: 10
+  #    start_period: 30s
     
   app:
     build: .
@@ -24,8 +61,11 @@ services:
     ports: 
       - "8090:8080"
     depends_on:
-      mysql:
+      postgres:
+      #mysql:
         condition: service_healthy
 
 volumes:
-  data_db:
+  #data_db:
+  pgdata:
+  #  driver: local
