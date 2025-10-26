@@ -262,3 +262,25 @@ docker compose up --build
     
 - `PATCH /admin/sitters/{userId}/verify`  
     **Описание**: (Только для администратора) Верификация профиля ситтера.
+
+## Документация API (Swagger / OpenAPI)
+
+В проекте используется **springdoc-openapi** для автоматической генерации OpenAPI (Swagger) документации.
+
+### Чтобы открыть документацию локально
+
+**1. Локальный запуск (Maven):**
+```bash
+cd backend
+mvn clean spring-boot:run
+```
+и откройте в браузере:
+- Swagger UI: http://localhost:8080/swagger-ui/index.html
+- raw OpenAPI JSON: http://localhost:8080/v3/api-docs
+
+**2. Через Docker Compose:**
+```bash
+cd backend
+docker compose up --build
+```
+и откройте http://localhost:8080/swagger-ui/index.html
