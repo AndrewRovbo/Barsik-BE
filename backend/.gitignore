@@ -34,3 +34,4 @@ build/
 
 /log/log.txt
 /log/log-*.txt
+/target/*
