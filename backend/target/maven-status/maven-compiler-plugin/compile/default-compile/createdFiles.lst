@@ -3,6 +3,7 @@ com\barsik\backend\repository\UserRepository.class
 com\barsik\backend\entity\Role.class
 com\barsik\backend\security\AuthTokenFilter.class
 com\barsik\backend\entity\Sitter.class
+com\barsik\backend\config\OpenApiConfig.class
 com\barsik\backend\security\SecurityUtil.class
 com\barsik\backend\api\DTO\request\UserRole.class
 com\barsik\backend\service\UserService.class
