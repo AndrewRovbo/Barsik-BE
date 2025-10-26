@@ -30,3 +30,7 @@ build/
 
 ### VS Code ###
 .vscode/
+
+
+/log/log.txt
+/log/log-*.txt
