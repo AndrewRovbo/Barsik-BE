@@ -21,7 +21,7 @@ import jakarta.servlet.http.HttpServletResponse;
 public class AuthTokenFilter extends  OncePerRequestFilter{
     
     @Autowired private JwtUtil jwtUtil;
-    @Autowired private CustomUserDetailsService userDetailsService;
+    //@Autowired private CustomUserDetailsService userDetailsService;
 
     private String getJwtFromCookies(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
