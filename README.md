@@ -168,3 +168,69 @@ cd backend
 docker compose up --build
 ```
 и откройте http://localhost:8080/swagger-ui/index.html
+
+## Организация сетевого взаимодействия (ngrok)
+
+Фронтенд и бэкенд работают на разных машинах; бэкенд публикуется в интернет через ngrok, фронтенд использует публичный HTTPS-URL от ngrok как API_BASE. Далее порядок действий:
+
+### 1) На машине с бэкендом (сервер приложений)
+
+**1. Логин в ngrok (однократно):**
+```bash
+ngrok authtoken <ВАШ_AUTHTOKEN>
+```
+**2. Запустите приложение локально:**
+```bash
+# для maven
+mvn spring-boot:run
+```
+**3. Запустите ngrok, пробросив порт бэкенда:**
+```bash
+ngrok http 8080 --region=eu
+```
+В выводе ngrok увидите строки вида:
+```nginx
+Forwarding                    https://abc123.ngrok-free.dev -> http://localhost:8080
+```
+Скопируйте HTTPS-URL https://abc123.ngrok-free.dev. Это публичный адрес вашего API.
+
+### 2) На машине с фронтендом (React)
+
+**1. В проекте React создайте/отредактируйте файл .env.local (в корне проекта)::**
+```bash
+REACT_APP_API_BASE=https://abc123.ngrok-free.dev/api
+```
+**2. Перезапустите dev-сервер React:**
+```bash
+npm start
+```
+**3. В коде используйте process.env.REACT_APP_API_BASE. Пример с axios:**
+```javascript
+// src/api/index.js
+import axios from 'axios';
+
+const api = axios.create({
+  baseURL: process.env.REACT_APP_API_BASE
+});
+
+export default api;
+
+// api.post('/auth/register', { username, password })
+```
+
+### 3) CORS (на бэкенде)
+Если фронтенд обращается к ngrok-URL, бэкенд должен разрешить этот origin:
+```java
+@Configuration
+public class WebConfig implements WebMvcConfigurer {
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/**")
+                .allowedOrigins("https://abc123.ngrok-free.dev")
+                .allowedMethods("GET","POST","PUT","DELETE","OPTIONS")
+                .allowCredentials(true);
+    }
+}
+```
+
+Если при тестированиии получаете ошибки 403/401/OPTIONS — первым делом проверяйте CORS и корректность baseURL.
