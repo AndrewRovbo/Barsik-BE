@@ -16,8 +16,6 @@ import com.barsik.backend.api.DTO.response.FullProfileResponse;
 import com.barsik.backend.entity.Owner;
 import com.barsik.backend.entity.Sitter;
 import com.barsik.backend.entity.User;
-import com.barsik.backend.repository.OwnerRepository;
-import com.barsik.backend.repository.SitterRepository;
 import com.barsik.backend.repository.UserRepository;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -25,13 +23,12 @@ import jakarta.persistence.EntityNotFoundException;
 
 
 @Service
-
 public class ProfileService {
     
 
 
-    @Autowired private OwnerRepository ownerRepository;
-    @Autowired private SitterRepository sitterRepository;
+    @Autowired private OwnerService ownerService;
+    @Autowired private SitterService sitterService;
     @Autowired private UserRepository userRepository;
     
     @Autowired private UserService userService;
@@ -42,7 +39,7 @@ public class ProfileService {
         userRepository.deleteById(userId);
     }
     @Transactional
-    public void deleteOwner(Long userId){
+    public void deleteOwner(Long userId){/*
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
 
@@ -51,11 +48,16 @@ public class ProfileService {
             user.setOwner(null);
             userRepository.save(user);
             //sitterRepository.deleteById(sitter.getUserId());
-        }
+        }*/
+        ownerService.deleteOwner(userId);
+        updateUpdatedAt(userId);
+        
     }
     @Transactional
     public void deleteSitter(Long userId){
-        User user = userRepository.findById(userId)
+        sitterService.deleteSitter(userId);
+        updateUpdatedAt(userId);
+        /*User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
 
         Sitter sitter = user.getSitter();
@@ -63,8 +65,9 @@ public class ProfileService {
             user.setSitter(null);
             userRepository.save(user);
             //sitterRepository.deleteById(sitter.getUserId());
-        }
+        }*/
     }
+
 
 
 //update
@@ -80,27 +83,14 @@ public class ProfileService {
                 if (!(request instanceof OwnerProfileUpdateRequest ownerRequest)) {
                 throw new IllegalArgumentException("Invalid request type for role OWNER");
                 }
-                Owner owner = ownerRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Owner profile not found"));
-                
-                if (ownerRequest.getAboutMe() != null) {
-                    owner.setAboutMe(ownerRequest.getAboutMe());
-                }
-                ownerRepository.save(owner);
+                ownerService.updateOwnerProfile(userId, ownerRequest);
                 updateUpdatedAt(userId);
             }
             case SITTER -> {
-                 if (!(request instanceof SitterProfileUpdateRequest sitterRequest)) {
+                if (!(request instanceof SitterProfileUpdateRequest sitterRequest)) {
                 throw new IllegalArgumentException("Invalid request type for role SITTER");
                 }
-                Sitter sitter = sitterRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Sitter profile not found"));
-        
-                if (sitterRequest.getExperienceSummary() != null) {
-                    sitter.setExperienceSummary(sitterRequest.getExperienceSummary());
-                }
-                
-                sitterRepository.save(sitter);
+                sitterService.updateSitterProfile(userId, sitterRequest);
                 updateUpdatedAt(userId);                
             }
             default -> throw new IllegalArgumentException("Unknown role: " + role);
@@ -119,10 +109,10 @@ public class ProfileService {
 
     public Set<UserRole> getUserRoles(Long userId) {
         Set<UserRole> roles = new HashSet<>();
-        if (ownerRepository.existsById(userId)) {
+        if (ownerService.existsByUserId(userId)) {
             roles.add(UserRole.OWNER);
         }
-        if (sitterRepository.existsById(userId)) {
+        if (sitterService.existsByUserId(userId)) {
             roles.add(UserRole.SITTER);
         }
         return roles;
@@ -153,12 +143,12 @@ public class ProfileService {
         resp.setRoles(roles);
 
         if (roles.contains(UserRole.OWNER)) {
-            Owner owner = ownerRepository.findById(userId).orElseThrow(() -> new RuntimeException("Owner profile not found"));
+            Owner owner = ownerService.getByUserId(userId);
             resp.setAboutMe(owner.getAboutMe());
             resp.setOwnerVerified(owner.getIsVerified());
         }
         if (roles.contains(UserRole.SITTER)) {
-            Sitter sitter = sitterRepository.findById(userId).orElseThrow(() -> new RuntimeException("Sitter profile not found"));
+            Sitter sitter = sitterService.getByUserId(userId);
             resp.setExperienceSummary(sitter.getExperienceSummary());
             resp.setAverageRating(sitter.getAverageRating());
             resp.setReviewsCount(sitter.getReviewsCount());

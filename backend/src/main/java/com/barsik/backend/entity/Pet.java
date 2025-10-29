@@ -122,5 +122,9 @@ public class Pet {
     public int hashCode() {
         return getClass().hashCode();
     }
+
+    public String getName() {
+        return name;
+    }
     
 }
