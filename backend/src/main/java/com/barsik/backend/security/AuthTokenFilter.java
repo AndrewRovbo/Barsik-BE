@@ -37,8 +37,14 @@ public class AuthTokenFilter extends  OncePerRequestFilter{
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        
-        
+
+        String path = request.getServletPath();
+
+    // Публичные эндпоинты пропускаем
+    if (path.startsWith("/auth/") || path.startsWith("/ws/")) {
+        filterChain.doFilter(request, response);
+        return;
+    }
         try {
             String jwt = getJwtFromCookies(request);
 
