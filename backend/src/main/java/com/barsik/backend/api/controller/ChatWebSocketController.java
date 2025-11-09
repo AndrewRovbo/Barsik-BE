@@ -1,9 +1,12 @@
 package com.barsik.backend.api.controller;
 
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 
 import com.barsik.backend.api.DTO.ChatMessageDTO;
@@ -50,5 +53,18 @@ public class ChatWebSocketController {
             "/queue/read",
             messageDto
         );
+    }
+    @MessageMapping("/chat.broadcast")
+    @PreAuthorize("hasRole('ADMIN')")
+    public void broadcast(@Payload ChatMessageDTO message) {
+        //message.setType(MessageType.SYSTEM);
+        messagingTemplate.convertAndSend("/topic/global", message);
+    }
+
+    @MessageMapping("/chat.broadcastToOnline")
+    @SendTo("/topic/onlineUsers")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ChatMessageDTO broadcastToOnline(ChatMessageDTO message) {
+        return message;
     }
 }
