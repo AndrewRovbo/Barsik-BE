@@ -55,7 +55,7 @@ public class ChatWebSocketController {
         );
     }
     @MessageMapping("/chat.broadcast")
-    @PreAuthorize("hasRole('ADMIN')")
+    //@PreAuthorize("hasRole('ADMIN')")
     public void broadcast(@Payload ChatMessageDTO message) {
         //message.setType(MessageType.SYSTEM);
         messagingTemplate.convertAndSend("/topic/global", message);
@@ -63,7 +63,7 @@ public class ChatWebSocketController {
 
     @MessageMapping("/chat.broadcastToOnline")
     @SendTo("/topic/onlineUsers")
-    @PreAuthorize("hasRole('ADMIN')")
+    //@PreAuthorize("hasRole('ADMIN')")
     public ChatMessageDTO broadcastToOnline(ChatMessageDTO message) {
         return message;
     }
