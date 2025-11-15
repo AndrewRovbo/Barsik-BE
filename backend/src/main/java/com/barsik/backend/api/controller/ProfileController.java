@@ -1,5 +1,7 @@
 package com.barsik.backend.api.controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.barsik.backend.api.DTO.AvaliabilityDTO;
 import com.barsik.backend.api.DTO.request.OwnerProfileUpdateRequest;
 import com.barsik.backend.api.DTO.request.PetRequest;
 import com.barsik.backend.api.DTO.request.SitterProfileUpdateRequest;
@@ -24,8 +27,10 @@ import com.barsik.backend.entity.User;
 import com.barsik.backend.security.SecurityUtil;
 import com.barsik.backend.service.OwnerService;
 import com.barsik.backend.service.ProfileService;
+import com.barsik.backend.service.SitterAvailabilityService;
 
 import jakarta.servlet.http.HttpServletResponse;
+
 
 
 
@@ -36,6 +41,7 @@ public class ProfileController {
     @Autowired private ProfileService profileService;
     @Autowired private SecurityUtil securityUtil;
     @Autowired private OwnerService ownerService;
+    @Autowired private SitterAvailabilityService sitterAvailabilityService;
 
 
     /**
@@ -153,7 +159,6 @@ public class ProfileController {
 
     
 
-
     @PutMapping("/sitter")
     public ResponseEntity<?> updateSitterProfile(@RequestBody SitterProfileUpdateRequest updateRequest
     ) {
@@ -176,7 +181,31 @@ public class ProfileController {
         return ResponseEntity.noContent().build();
 
     }
+    
+    @PutMapping("/sitter/avaliability")
+    public ResponseEntity<?> updateAvailability(@RequestBody List<AvaliabilityDTO> request){
+        Long userId = securityUtil.getCurrentUserId();
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
 
+        sitterAvailabilityService.updateAvailability(userId, request);
+        //обработка исключений
+        return ResponseEntity.ok().build();
+    }
+    
+    @GetMapping("/sitter/avaliability")
+    public ResponseEntity<?> getMethodName() {
+        Long userId = securityUtil.getCurrentUserId();
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        
+        List<AvaliabilityDTO> lst =  sitterAvailabilityService.findBySitterId(userId);
+        return ResponseEntity.ok(lst);
+    }
+
+    
     private ResponseCookie delCookie(){
         ResponseCookie cookie = ResponseCookie.from("JWT_TOKEN", "")
             .path("/")

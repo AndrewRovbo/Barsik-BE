@@ -22,6 +22,7 @@ public class SitterService {
 
     @Autowired private SitterRepository sitterRepository;
     
+
     @Transactional
     public void updateSitterProfile(Long userId, SitterProfileUpdateRequest request) {
         Sitter sitter = sitterRepository.findById(userId)
@@ -53,6 +54,9 @@ public class SitterService {
         return sitterRepository.findById(userId)
             .orElseThrow(() -> new EntityNotFoundException("Sitter not found"));
     }
+
+
+
     public List<Sitter> searchSitters(String experienceKeyword, BigDecimal minRating, Boolean isVerified) {
         Specification<Sitter> spec = filterByCriteria(experienceKeyword, minRating, isVerified);
         return sitterRepository.findAll(spec);
@@ -80,4 +84,5 @@ public class SitterService {
             return cb.and(predicates.toArray(new Predicate[0]));
         };
     }
+
 }
