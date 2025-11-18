@@ -41,7 +41,7 @@ public class AuthTokenFilter extends  OncePerRequestFilter{
         String path = request.getServletPath();
 
     // Публичные эндпоинты пропускаем
-    if (path.startsWith("/auth/") || path.startsWith("/ws/")) {
+    if (path.startsWith("/api/auth/") || path.startsWith("/ws/")) {
         filterChain.doFilter(request, response);
         return;
     }
