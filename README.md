@@ -61,9 +61,10 @@ docker compose up --build
            {
               "email": "user@example.com",
               "password": "securepassword123",
-              "firstName": "John",
-              "lastName": "Smith",
-              "phone": "+37529234567",
+              "phoneNumber": "+1987654321",
+              "firstName": "grzegorz",
+              "lastName": "bily",
+              "role": "OWNER"
            }
       - Response: Status 201 on successful registration.   
 - `POST /auth/login`  
@@ -76,56 +77,58 @@ docker compose up --build
               "password": "password123"
             }
 
-    - Response:
-      - ```json {
-        
-        {
-        "token": "jwt-token"
-        }
-    
-- `GET /profile`  
-   - **Описание**: Получение информации о текущем аутентифицированном пользователе (из таблиц `users`, `owners`/`sitters`).
-- `PUT /profile`  
-    - **Описание**: Обновление базовой информации своего профиля.
-    - Request
-      - ```json {
-         {
-           "first_name": "John",
-           "last_name": "Smith",
-           "avatar_url": "https://example.com/avatars/john.jpg",
-           "address": "city, street, house"
-         }
+-  `GET /api/auth/logout`
+
+- `GET /api/profile`
+- `DELETE /api/profile/user`
+- `PUT /api/profile/owner`
+- `DELETE /api/profile/owner`
+- `GET /api/profile/owner/pets`
+- `POST /api/profile/owner/pets`
+- `PUT /api/profile/owner/pets/{slug}`
+- `DELETE /api/profile/owner/pets/{slug}`
+- `PUT /api/profile/user`
+- `PUT /api/profile/sitter`
+- `DELETE /api/profile/sitter`
+- `PUT /api/profile/sitter/avaliability`
+- `GET /api/profile/sitter/avaliability`
 
 
 ### 2. Sitters
 
+- `GET /api/sitters/search`
 
-- `GET /sitters`  
-    **Описание**: Публичный поиск ситтеров с возможностью фильтрации по геолокации, типу услуг, рейтингу, цене и датам доступности.
-    
-- `GET /sitters/{userId}`  
-    **Описание**: Получение детального публичного профиля ситтера, включая его услуги с ценами, средний рейтинг и отзывы.
-    
-- `PUT /sitters/me/profile`
-   - **Описание**: Ситтер обновляет свой профессиональный профиль (опыт, часовая ставка и т.д.).
-   - Request
-      - ```json {
-         {
-           "experience_summary": "Более 3 лет работаю с кошками, есть опыт ухода за экзотическими породами. Обожаю животных!",
-           "hourly_rate": 800.00,
-           "is_available": true
-        }
-    - Response: Status 201.  
+### 3. Chat
 
-    
-- `POST /sitters/me/services`  
-    **Описание**: Ситтер добавляет или обновляет услуги, которые он предоставляет, и устанавливает на них цены.
-    
-- `GET /sitters/me/availability`  
-    **Описание**: Ситтер получает свой календарь доступности.
-    
-- `POST /sitters/me/availability`  
-    **Описание**: Ситтер добавляет или обновляет временные слоты, когда он доступен для работы.
+- `GET /api/chats/{chatId}/messages(page, size)`
+- `GET /api/chats/{userId}`
+
+  Подключение к WebSocket
+- `/ws`
+Протокол: SockJS + STOMP
+
+Эндпоинты для отправки сообщений:
+- ` /app/chat.sendMessage`
+- `/app/chat.confirmReceived`
+- `/app/chat.confirmDelivered`
+- `/app/chat.confirmRead`
+- `/app/chat.broadcast`
+- `/app/chat.broadcastToOnline`
+  Эндпоинты для подписки:
+1. /user/queue/messages
+Назначение: Получение личных сообщений
+
+2. /user/queue/read
+Назначение: Уведомления о прочтении сообщений
+
+3. /topic/global
+Назначение: Получение broadcast сообщений
+
+4. /topic/onlineUsers
+Назначение: Получение сообщений для онлайн пользователей
+
+
+----------дальше неправда
   
 ### 3. Owners and Pets
 
