@@ -18,9 +18,10 @@
 
 ## Стек используемых технологий
 
-- Java
-- Spring Boot
-- MySQL
+- Java Spring Boot
+- Spring Data
+- Sping Security
+- PostgreSQL
 
 ## Роли пользователей
 - **Неавторизованный пользователь**: 
@@ -34,18 +35,12 @@
 
 
 ## Сценарии
-[use-case diagrams](./UseCases-diagram.png)
+![use-case diagrams](./Diagram.png)
 
 
 ## Схема БД
-[Схема БД](./sql/db_v3.svg)
+![Схема БД](./sql/db_v3.svg)
 
-## Сьорка проекта
-(пока в ветке дев)
-необходим докер
-из директории проекта
-cd ./backend
-docker compose up --build
 
 ## API: Endpoint Overview
 
@@ -76,33 +71,247 @@ docker compose up --build
               "email": "user@example.com",
               "password": "password123"
             }
+         ```
+         При успещной аутентификации добавление в Http-Onle Cookie JWT
 
 -  `GET /api/auth/logout`
 
 - `GET /api/profile`
+  ```json
+     {
+        "email": "user@example.com",
+        "firstName": "Иван",
+        "lastName": "Петров",
+        "phoneNumber": "+79991234567",
+        "avatarUrl": "https://example.com/avatar.jpg",
+        "address": "Москва, ул. Примерная, д. 1",
+        "roles": ["OWNER", "SITTER"],
+        "aboutMe": "Люблю животных, имею двух кошек и собаку",
+        "ownerVerified": true,
+        "experienceSummary": "Опыт работы с животными более 5 лет",
+        "averageRating": 4.8,
+        "reviewsCount": 25,
+        "sitterVerified": true,
+        "createdAt": "2024-01-15T10:30:00",
+        "updateddAt": "2024-01-20T14:45:00"
+      }
+  ```
+  
+  
 - `DELETE /api/profile/user`
+  
 - `PUT /api/profile/owner`
+  
 - `DELETE /api/profile/owner`
+  
 - `GET /api/profile/owner/pets`
+     ```json
+        [
+           {
+             "name": "Барсик",
+             "type": "CAT",
+             "breed": "Британская",
+             "age": 3,
+             "gender": "MALE",
+             "description": "Спокойный и ласковый кот",
+             "photoUrl": "https://example.com/barsik.jpg"
+           },
+           {
+             "name": "Шарик",
+             "type": "DOG",
+             "breed": "Лабрадор",
+             "age": 5,
+             "gender": "MALE",
+             "description": "Активная и дружелюбная собака",
+             "photoUrl": "https://example.com/sharik.jpg"
+           }
+         ]
+     ```
+  
 - `POST /api/profile/owner/pets`
+     ```json
+        {
+           "name": "Барсик",
+           "type": "CAT",
+           "breed": "Британская",
+           "age": 3,
+           "gender": "MALE",
+           "description": "Спокойный и ласковый кот",
+           "photoUrl": "https://example.com/barsik.jpg"
+         }
+     ```
+  
 - `PUT /api/profile/owner/pets/{slug}`
+  
 - `DELETE /api/profile/owner/pets/{slug}`
+  
 - `PUT /api/profile/user`
+  
 - `PUT /api/profile/sitter`
+  Request
+     ```json
+        {
+           "experienceSummary": "Опыт работы с животными более 5 лет. Специализируюсь на кошках и маленьких собаках.",
+           "averageRating": 4.8,
+           "reviewsCount": 25,
+           "sitterVerified": true
+         }
+     ```
+  
 - `DELETE /api/profile/sitter`
+  
 - `PUT /api/profile/sitter/avaliability`
+     ```json
+           [
+              {
+                "dayOfWeek": "MONDAY",
+                "available": true,
+                "startTime": "09:00",
+                "endTime": "18:00"
+              },
+              {
+                "dayOfWeek": "TUESDAY",
+                "available": true,
+                "startTime": "10:00",
+                "endTime": "17:00"
+              },
+              {
+                "dayOfWeek": "WEDNESDAY",
+                "available": false,
+                "startTime": null,
+                "endTime": null
+              }
+         ]
+     ```
+  
 - `GET /api/profile/sitter/avaliability`
+  
 
 
 ### 2. Sitters
 
-- `GET /api/sitters/search`
+- `GET /api/sitters/search?(minRating,experienceKeyword,isVerified=true)`
+  Response:
+  ```json
+        [
+           {
+             "id": 1,
+             "experienceSummary": "Опыт работы с кошками более 3 лет",
+             "averageRating": 4.5,
+             "reviewsCount": 15,
+             "sitterVerified": true,
+             "user": {
+               "firstName": "Анна",
+               "lastName": "Иванова",
+               "avatarUrl": "https://example.com/avatar1.jpg",
+               "phoneNumber": "+79991112233"
+             }
+           },
+           {
+             "id": 2,
+             "experienceSummary": "Профессиональный petsitter с 5-летним стажем",
+             "averageRating": 4.8,
+             "reviewsCount": 32,
+             "sitterVerified": true,
+             "user": {
+               "firstName": "Петр",
+               "lastName": "Сидоров",
+               "avatarUrl": "https://example.com/avatar2.jpg",
+               "phoneNumber": "+79994445566"
+             }
+           }
+         ]
+  ```
 
 ### 3. Chat
 
 - `GET /api/chats/{chatId}/messages(page, size)`
+  Respone
+  ```json
+        {
+           "content": [
+             {
+               "chatId": 123,
+               "senderId": 1,
+               "recepientId": 2,
+               "content": "Привет! Как дела у Барсика?",
+               "type": "TEXT",
+               "timestamp": "2024-01-20T10:30:00"
+             },
+             {
+               "chatId": 123,
+               "senderId": 2,
+               "recepientId": 1,
+               "content": "Всё отлично! Он хорошо поел и сейчас спит",
+               "type": "TEXT",
+               "timestamp": "2024-01-20T10:32:15"
+             },
+             {
+               "chatId": 123,
+               "senderId": 2,
+               "recepientId": 1,
+               "content": "https://example.com/barsik-sleeping.jpg",
+               "type": "IMAGE",
+               "timestamp": "2024-01-20T10:33:00"
+             },
+             {
+               "chatId": 123,
+               "senderId": 1,
+               "recepientId": 2,
+               "content": "Спасибо за фото! Очень мило 😊",
+               "type": "TEXT",
+               "timestamp": "2024-01-20T10:35:22"
+             }
+           ],
+           "pageable": {
+             "pageNumber": 0,
+             "pageSize": 20,
+             "sort": {
+               "empty": true,
+               "sorted": false,
+               "unsorted": true
+             },
+             "offset": 0,
+             "paged": true,
+             "unpaged": false
+           },
+           "last": true,
+           "totalElements": 4,
+           "totalPages": 1,
+           "size": 20,
+           "number": 0,
+           "sort": {
+             "empty": true,
+             "sorted": false,
+             "unsorted": true
+           },
+           "first": true,
+           "numberOfElements": 4,
+           "empty": false
+         }
+  ```
 - `GET /api/chats/{userId}`
-
+   Response
+  ```json
+        [
+           {
+             "chatId": 123,
+             "name": "Анна Иванова",
+             "participantUserIds": [1, 2],
+             "participantUsernames": ["ivan_petrov", "anna_ivanova"],
+             "lastMessageTime": "2024-01-20T10:35:22Z",
+             "unreadCount": 2
+           },
+           {
+             "chatId": 125,
+             "name": "Групповой чат - Выгул собак",
+             "participantUserIds": [1, 3, 4, 5],
+             "participantUsernames": ["ivan_petrov", "petr_sidorov", "maria_volkova", "olga_kuznetsova"],
+             "lastMessageTime": "2024-01-18T09:45:30Z",
+             "unreadCount": 5
+           }
+         ]
+  ```
   Подключение к WebSocket
 - `/ws`
 Протокол: SockJS + STOMP
@@ -115,20 +324,18 @@ docker compose up --build
 - `/app/chat.broadcast`
 - `/app/chat.broadcastToOnline`
   Эндпоинты для подписки:
-1. /user/queue/messages
-Назначение: Получение личных сообщений
+   1. /user/queue/messages
+   Назначение: Получение личных сообщений
+   
+   2. /user/queue/read
+   Назначение: Уведомления о прочтении сообщений
+   
+   3. /topic/global
+   Назначение: Получение broadcast сообщений
+   
+   4. /topic/onlineUsers
+   Назначение: Получение сообщений для онлайн пользователей
 
-2. /user/queue/read
-Назначение: Уведомления о прочтении сообщений
-
-3. /topic/global
-Назначение: Получение broadcast сообщений
-
-4. /topic/onlineUsers
-Назначение: Получение сообщений для онлайн пользователей
-
-
-----------дальше неправда
   
 ### 3. Owners and Pets
 
@@ -274,16 +481,14 @@ docker compose up --build
 
 **1. Локальный запуск (Maven):**
 ```bash
-cd backend
-mvn clean spring-boot:run
+cd backend & mvn clean spring-boot:run
 ```
 и откройте в браузере:
 - Swagger UI: http://localhost:8080/swagger-ui/index.html
 - raw OpenAPI JSON: http://localhost:8080/v3/api-docs
 
 **2. Через Docker Compose:**
+
 ```bash
-cd backend
-docker compose up --build
+cd backend & docker compose up --build
 ```
-и откройте http://localhost:8080/swagger-ui/index.html
