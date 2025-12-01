@@ -4,6 +4,7 @@ package com.barsik.backend.api.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
@@ -40,6 +41,10 @@ public class AuthController {
     @Autowired private UserService userService;
     @Autowired private UserRepository userRepository;
     @Autowired private JwtUtil jwtUtil;
+    @Value("${app.cookie.secure:false}")
+    private boolean cookieSecure;
+    @Value("${app.cookie.sameSite:Lax}")
+    private String cookieSameSite;
 
 
 
@@ -72,13 +77,14 @@ public class AuthController {
         String jwt = jwtUtil.generateToken(userDetails.getUsername(), user.getId(), roles);
         ResponseCookie jwtCookie = ResponseCookie.from("JWT_TOKEN", jwt)
             .httpOnly(true)
-            .secure(true)// только по HTTPS
-            .path("/")// доступно на всех путях
+            .secure(cookieSecure)
+            .path("/")
             .maxAge(86400)
-            .sameSite("Strict")//защита от CSRF
+            .sameSite(cookieSameSite)
             .build();
 
     response.addHeader(HttpHeaders.SET_COOKIE, jwtCookie.toString());
+    response.addHeader("Access-Control-Allow-Credentials", "true");
 
     // 6. Возвращаем ответ без токена в теле
     return ResponseEntity.ok(new LogInResponse(userDetails.getUsername(), roles));
@@ -105,11 +111,12 @@ public class AuthController {
         ResponseCookie cookie = ResponseCookie.from("JWT_TOKEN", "")
             .path("/")
             .httpOnly(true)
-            .secure(true)
-            .sameSite("Strict")
+            .secure(cookieSecure)
+            .sameSite(cookieSameSite)
             .maxAge(0)
             .build();
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+        response.addHeader("Access-Control-Allow-Credentials", "true");
         return ResponseEntity.noContent().build();
     }
     
