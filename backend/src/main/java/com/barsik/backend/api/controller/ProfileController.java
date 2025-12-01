@@ -3,6 +3,7 @@ package com.barsik.backend.api.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
@@ -42,6 +43,10 @@ public class ProfileController {
     @Autowired private SecurityUtil securityUtil;
     @Autowired private OwnerService ownerService;
     @Autowired private SitterAvailabilityService sitterAvailabilityService;
+    @Value("${app.cookie.secure:false}")
+    private boolean cookieSecure;
+    @Value("${app.cookie.sameSite:Lax}")
+    private String cookieSameSite;
 
 
     /**
@@ -210,8 +215,8 @@ public class ProfileController {
         ResponseCookie cookie = ResponseCookie.from("JWT_TOKEN", "")
             .path("/")
             .httpOnly(true)
-            .secure(true)
-            .sameSite("Strict")
+            .secure(cookieSecure)
+            .sameSite(cookieSameSite)
             .maxAge(0)
             .build();
         return cookie;
