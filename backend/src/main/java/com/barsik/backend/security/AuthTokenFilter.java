@@ -1,6 +1,8 @@
 package com.barsik.backend.security;
 
 import java.io.IOException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +21,8 @@ import jakarta.servlet.http.HttpServletResponse;
 //AuthTokenFilter создаёт Authentication с этими ролями.
 @Component
 public class AuthTokenFilter extends  OncePerRequestFilter{
-    
+    private static final Logger logger = LoggerFactory.getLogger(AuthTokenFilter.class);
+
     @Autowired private JwtUtil jwtUtil;
     //@Autowired private CustomUserDetailsService userDetailsService;
 
@@ -46,7 +49,11 @@ public class AuthTokenFilter extends  OncePerRequestFilter{
         return;
     }
         try {
+            Cookie[] cookies = request.getCookies();
+            logger.debug("AuthTokenFilter: request path={} cookiesPresent={}", path, cookies != null ? cookies.length : 0);
+
             String jwt = getJwtFromCookies(request);
+            logger.debug("AuthTokenFilter: extracted jwt present={}", jwt != null);
 
             if(jwt != null && jwtUtil.validateJwtToken(jwt)){
                 String email = jwtUtil.getUserEmailFromToken(jwt);
@@ -68,7 +75,7 @@ public class AuthTokenFilter extends  OncePerRequestFilter{
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }
         } catch (Exception e) {
-            //log
+            logger.error("AuthTokenFilter error", e);
         }
         filterChain.doFilter(request, response);
     }
