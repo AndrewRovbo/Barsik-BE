@@ -57,6 +57,8 @@ public class WebSecurityConfig {
                 .requestMatchers("/v3/api-docs/**").permitAll()
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/profile").authenticated()
+                .requestMatchers("/api/profile/user").authenticated()
+                .requestMatchers("/api/profile/sitter").authenticated()
                 .requestMatchers("/api/profile/owner/**").hasRole("OWNER")
                 .requestMatchers("/api/profile/sitter/**").hasRole("SITTER")
                 .requestMatchers("/api/chats/").authenticated()
