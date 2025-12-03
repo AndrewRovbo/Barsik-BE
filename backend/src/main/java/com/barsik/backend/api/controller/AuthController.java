@@ -1,6 +1,5 @@
 package com.barsik.backend.api.controller;
 
-
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,11 +8,13 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -30,13 +31,10 @@ import com.barsik.backend.service.UserService;
 
 import jakarta.servlet.http.HttpServletResponse;
 
-
-
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
 
-    
     @Autowired private AuthenticationManager authenticationManager;
     @Autowired private UserService userService;
     @Autowired private UserRepository userRepository;
@@ -46,66 +44,62 @@ public class AuthController {
     @Value("${app.cookie.sameSite:Lax}")
     private String cookieSameSite;
 
-
-
-    
-
-    /*
-     * Sign in — авторизация существующего пользователя; Sign up — регистрация нового пользователя
-    */
-    
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LogInRequest logInRequest, HttpServletResponse response) {
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(logInRequest.getEmail(), logInRequest.getPassword())
+            );
 
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
 
-        Authentication authentication = authenticationManager.authenticate(
-            new UsernamePasswordAuthenticationToken(logInRequest.getEmail(), logInRequest.getPassword())
-        );
+            User user = userRepository.findByEmail(userDetails.getUsername())
+                    .orElseThrow(() -> new RuntimeException("User not found"));
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+            List<String> roles = userDetails.getAuthorities().stream()
+                    .map(GrantedAuthority::getAuthority)
+                    .map(r -> r.replace("ROLE_", ""))
+                    .toList();
 
-        
-        User user = userRepository.findByEmail(userDetails.getUsername())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+            String jwt = jwtUtil.generateToken(userDetails.getUsername(), user.getId(), roles);
+            ResponseCookie jwtCookie = ResponseCookie.from("JWT_TOKEN", jwt)
+                .httpOnly(true)
+                .secure(cookieSecure)
+                .path("/")
+                .maxAge(86400)
+                .sameSite(cookieSameSite)
+                .build();
 
-        List<String> roles = userDetails.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .map(r -> r.replace("ROLE_", ""))
-                .toList();
+            response.addHeader(HttpHeaders.SET_COOKIE, jwtCookie.toString());
+            
 
-        String jwt = jwtUtil.generateToken(userDetails.getUsername(), user.getId(), roles);
-        ResponseCookie jwtCookie = ResponseCookie.from("JWT_TOKEN", jwt)
-            .httpOnly(true)
-            .secure(cookieSecure)
-            .path("/")
-            .maxAge(86400)
-            .sameSite(cookieSameSite)
-            .build();
-
-    response.addHeader(HttpHeaders.SET_COOKIE, jwtCookie.toString());
-    response.addHeader("Access-Control-Allow-Credentials", "true");
-
-    // 6. Возвращаем ответ без токена в теле
-    return ResponseEntity.ok(new LogInResponse(userDetails.getUsername(), roles));
+            return ResponseEntity.ok(new LogInResponse(userDetails.getUsername(), roles));
+        } catch (BadCredentialsException e) {
+            System.out.println("BadCredentialsException: " + e.getMessage());
+            return ResponseEntity.status(401).body("Invalid email or password");
+        } catch (UsernameNotFoundException e) {
+            System.out.println("UsernameNotFoundException: " + e.getMessage());
+            return ResponseEntity.status(401).body("User not found");
+        } catch (Exception e) {
+            System.err.println("Login error: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(401).body("Authentication failed: " + e.getMessage());
+        }
     }
-    
-/*
 
-*/
-    
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody RegistrationRequestLong request) {
-        //if(userRepository.existsByEmail(request.getEmail())){ return ResponseEntity.badRequest().body("User with this email exist");}
         try {
             userService.registerUser(request);
             return ResponseEntity.status(201).body("User registered successfully");
-        
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Registration failed: " + e.getMessage());
         }
-        
     }
+
     @GetMapping("/logout")
     public ResponseEntity<?> logout(HttpServletResponse response) {
         ResponseCookie cookie = ResponseCookie.from("JWT_TOKEN", "")
@@ -116,9 +110,9 @@ public class AuthController {
             .maxAge(0)
             .build();
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
-        response.addHeader("Access-Control-Allow-Credentials", "true");
+        
         return ResponseEntity.noContent().build();
     }
-    
-
 }
+
+
