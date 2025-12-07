@@ -1,7 +1,7 @@
 package com.barsik.backend.repository;
 
 import java.util.Optional;
-
+import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -14,4 +14,9 @@ public interface ChatRepository extends JpaRepository<Chat, Long>{
     @Query("SELECT c FROM Chat c WHERE (c.participant1Id = :senderId AND c.participant2Id = :recipientId) OR (c.participant1Id = :recipientId AND c.participant2Id = :senderId)")
     Optional<Chat> findByParticipants(@Param("senderId") Long id1, @Param("recipientId") Long id2);
 
+    @Query("""
+        SELECT c FROM Chat c 
+        WHERE c.participant1Id = :userId OR c.participant2Id = :userId
+    """)
+    List<Chat> findChatsByUserId(Long userId);
 }

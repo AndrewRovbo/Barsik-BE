@@ -1,6 +1,8 @@
 package com.barsik.backend.repository;
 
+import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,21 +17,24 @@ import com.barsik.backend.entity.ChatMessage;
 @Repository
 public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> {
 
-
     @Query("SELECT new com.barsik.backend.api.DTO.ChatMessageDTO(m.chatId, m.senderId, m.recipientId, m.content, m.type, m.timestamp) " +
-        "FROM ChatMessage m " +
-        "WHERE m.chatId = :chatId ORDER BY m.timestamp ASC")
+            "FROM ChatMessage m " +
+            "WHERE m.chatId = :chatId ORDER BY m.timestamp ASC")
     List<ChatMessageDTO> findChatMessagesWithUserIds(@Param("chatId") Long chatId);
 
     @Query("SELECT new com.barsik.backend.api.DTO.ChatMessageDTO(m.id, s.id, r.id, m.content, m.type, m.timestamp) " +
-       "FROM ChatMessage m " +
-       "JOIN User s ON m.senderId = s.id " +
-       "JOIN User r ON m.recipientId = r.id " +
-       "WHERE m.chatId = :chatId ORDER BY m.timestamp ASC")
+            "FROM ChatMessage m " +
+            "JOIN User s ON m.senderId = s.id " +
+            "JOIN User r ON m.recipientId = r.id " +
+            "WHERE m.chatId = :chatId ORDER BY m.timestamp ASC")
     List<ChatMessageDTO> findChatMessagesWithUserNames(@Param("chatId") Long chatId);
 
     Page<ChatMessage> findByChatIdOrderByTimestampDesc(Long chatId, Pageable pageable);
+
+    // Новые методы для ChatService
+    @Query("SELECT MAX(m.timestamp) FROM ChatMessage m WHERE m.chatId = :chatId")
+    Optional<Instant> findLastMessageTime(@Param("chatId") Long chatId);
+
+    @Query("SELECT COUNT(m) FROM ChatMessage m WHERE m.chatId = :chatId AND m.recipientId = :userId AND m.status <> 'READ'")
+    int countUnreadMessages(@Param("chatId") Long chatId, @Param("userId") Long userId);
 }
-
-
-///теперь как организовать чат между 2 людьми как контроллер для этого. 
