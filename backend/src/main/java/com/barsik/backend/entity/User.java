@@ -3,7 +3,7 @@ package com.barsik.backend.entity;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
-
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import org.springframework.security.core.GrantedAuthority;
 
 import jakarta.persistence.CascadeType;
@@ -53,6 +53,7 @@ public class User {
     private LocalDateTime updatedAt;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonBackReference  // Это предотвращает рекурсию
     private Owner owner;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)

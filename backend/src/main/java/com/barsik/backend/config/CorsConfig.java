@@ -13,7 +13,7 @@ public class CorsConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource(){
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:3000", "https://abc123.ngrok.io")); //front url
+        config.setAllowedOrigins(List.of("http://localhost:3000", "https://abc123.ngrok.io","http://localhost:3001")); //front url
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
         config.setAllowedHeaders(List.of("Authorization", "Content-type"));
         config.setAllowCredentials(true);//cookies tokens

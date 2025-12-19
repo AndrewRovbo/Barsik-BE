@@ -16,7 +16,7 @@ import lombok.Setter;
 public class ChatMessageDTO {
     private Long chatId;
     private Long senderId;
-    private Long recepientId;
+    private Long recipientId;
     private String content;
     private MessageType type;
     private LocalDateTime timestamp;

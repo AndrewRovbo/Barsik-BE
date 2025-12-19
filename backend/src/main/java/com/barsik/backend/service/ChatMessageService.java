@@ -36,22 +36,29 @@ public class ChatMessageService {
 
     @Transactional
     public ChatMessageDTO sendMessageAndCreateChatIfNotExist(ChatMessageDTO messageDto) {
-        Chat chat = chatRepository.findByParticipants(messageDto.getSenderId(), messageDto.getRecepientId())
+        // Находим чат, если он существует
+        Chat chat = chatRepository.findByParticipants(messageDto.getSenderId(), messageDto.getRecipientId())
                 .orElseGet(() -> {
+                    // Если чат не найден, создаем новый
                     Chat newChat = new Chat();
                     newChat.setParticipant1Id(messageDto.getSenderId());
-                    newChat.setParticipant2Id(messageDto.getRecepientId());
-                    messageDto.setType(MessageType.JOIN);
+                    newChat.setParticipant2Id(messageDto.getRecipientId());
+                    newChat.setCreatedAt(LocalDateTime.now());  // Устанавливаем дату создания чата
+                    messageDto.setType(MessageType.JOIN);  // Этот тип сообщения можно использовать для уведомления о создании чата
                     return chatRepository.save(newChat);
                 });
-        
+
+        // Создаем новое сообщение
         ChatMessage message = new ChatMessage();
         message.setChatId(chat.getId());
         message.setSenderId(messageDto.getSenderId());
-        message.setRecipientId(messageDto.getRecepientId());
+        message.setRecipientId(messageDto.getRecipientId());
         message.setContent(messageDto.getContent());
         message.setType(messageDto.getType());
         message.setStatus(MessageStatus.SENDING);
+        message.setTimestamp(LocalDateTime.now());  // Устанавливаем время отправки сообщения
+
+        // Сохраняем сообщение в базе данных
         return toDTO(chatMessageRepository.save(message));
     }
     // Сообщение отправлено клиентом

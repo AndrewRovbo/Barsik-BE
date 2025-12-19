@@ -2,6 +2,8 @@ package com.barsik.backend.entity;
 
 import java.time.LocalDateTime;
 
+import jakarta.persistence.PrePersist;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -11,6 +13,8 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import java.time.LocalDateTime;
+import jakarta.persistence.PreUpdate;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
@@ -33,7 +37,18 @@ public class Chat {
 
     @Column(updatable = false, name = "created_at",nullable = false)
     private LocalDateTime createdAt;
-    
+
+    @PrePersist
+    public void prePersist() {
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
+    }
+
+    @PreUpdate
+    public void preUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
     @Column(name = "updated_at",nullable = false)
     private LocalDateTime updatedAt;
 }

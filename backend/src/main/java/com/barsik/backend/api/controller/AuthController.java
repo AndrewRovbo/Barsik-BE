@@ -74,7 +74,7 @@ public class AuthController {
             response.addHeader(HttpHeaders.SET_COOKIE, jwtCookie.toString());
             
 
-            return ResponseEntity.ok(new LogInResponse(userDetails.getUsername(), roles));
+            return ResponseEntity.ok(new LogInResponse(user.getId(),userDetails.getUsername(), roles));
         } catch (BadCredentialsException e) {
             System.out.println("BadCredentialsException: " + e.getMessage());
             return ResponseEntity.status(401).body("Invalid email or password");

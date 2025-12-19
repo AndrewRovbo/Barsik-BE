@@ -25,7 +25,7 @@ public class ChatWebSocketController {
     @MessageMapping("/chat.sendMessage")
     public void sendMessage(@Payload ChatMessageDTO chatMessage) {
         ChatMessageDTO saved = chatMessageService.sendMessageAndCreateChatIfNotExist(chatMessage);
-        Long recipientId = chatMessage.getRecepientId();
+        Long recipientId = chatMessage.getRecipientId();
         messagingTemplate.convertAndSendToUser(
             recipientId.toString(), 
             "/queue/messages", 
