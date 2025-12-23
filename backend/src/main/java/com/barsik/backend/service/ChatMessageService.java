@@ -36,31 +36,32 @@ public class ChatMessageService {
 
     @Transactional
     public ChatMessageDTO sendMessageAndCreateChatIfNotExist(ChatMessageDTO messageDto) {
-        // Находим чат, если он существует
-        Chat chat = chatRepository.findByParticipants(messageDto.getSenderId(), messageDto.getRecipientId())
+        Long senderId = messageDto.getSenderId();
+        Long recipientId = messageDto.getRecipientId();
+
+        // Используем симметричный поиск
+        Chat chat = chatRepository.findByParticipants(senderId, recipientId)
                 .orElseGet(() -> {
-                    // Если чат не найден, создаем новый
                     Chat newChat = new Chat();
-                    newChat.setParticipant1Id(messageDto.getSenderId());
-                    newChat.setParticipant2Id(messageDto.getRecipientId());
-                    newChat.setCreatedAt(LocalDateTime.now());  // Устанавливаем дату создания чата
-                    messageDto.setType(MessageType.JOIN);  // Этот тип сообщения можно использовать для уведомления о создании чата
+                    newChat.setParticipant1Id(Math.min(senderId, recipientId));
+                    newChat.setParticipant2Id(Math.max(senderId, recipientId));
+                    newChat.setCreatedAt(LocalDateTime.now());
+                    newChat.setUpdatedAt(LocalDateTime.now());
                     return chatRepository.save(newChat);
                 });
 
-        // Создаем новое сообщение
         ChatMessage message = new ChatMessage();
         message.setChatId(chat.getId());
-        message.setSenderId(messageDto.getSenderId());
-        message.setRecipientId(messageDto.getRecipientId());
+        message.setSenderId(senderId);
+        message.setRecipientId(recipientId);
         message.setContent(messageDto.getContent());
         message.setType(messageDto.getType());
         message.setStatus(MessageStatus.SENDING);
-        message.setTimestamp(LocalDateTime.now());  // Устанавливаем время отправки сообщения
+        message.setTimestamp(LocalDateTime.now());
 
-        // Сохраняем сообщение в базе данных
         return toDTO(chatMessageRepository.save(message));
     }
+
     // Сообщение отправлено клиентом
     @Transactional
     public void markReceived(Long messageId) {

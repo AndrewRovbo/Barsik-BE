@@ -8,14 +8,16 @@ import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
-
+import com.barsik.backend.repository.UserRepository;
+import com.barsik.backend.entity.User;
 import com.barsik.backend.api.DTO.ChatMessageDTO;
 import com.barsik.backend.service.ChatMessageService;
 
 
 @Controller
 public class ChatWebSocketController {
-
+    @Autowired
+    private UserRepository userRepository;
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
@@ -25,13 +27,11 @@ public class ChatWebSocketController {
     @MessageMapping("/chat.sendMessage")
     public void sendMessage(@Payload ChatMessageDTO chatMessage) {
         ChatMessageDTO saved = chatMessageService.sendMessageAndCreateChatIfNotExist(chatMessage);
-        Long recipientId = chatMessage.getRecipientId();
-        messagingTemplate.convertAndSendToUser(
-            recipientId.toString(), 
-            "/queue/messages", 
-            saved
-        );
+
+        // Отправляем всем подписанным на этот конкретный чат
+        messagingTemplate.convertAndSend("/topic/chat." + saved.getChatId(), saved);
     }
+
     @MessageMapping("/chat.confirmReceived")
     public void confirmReceived(@Payload Long messageId) {
         chatMessageService.markReceived(messageId);
