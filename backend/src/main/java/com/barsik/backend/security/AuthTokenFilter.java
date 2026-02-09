@@ -1,10 +1,10 @@
 package com.barsik.backend.security;
 
 import java.io.IOException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -20,7 +20,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 //AuthTokenFilter создаёт Authentication с этими ролями.
 @Component
-public class AuthTokenFilter extends  OncePerRequestFilter{
+public class AuthTokenFilter extends OncePerRequestFilter{
     private static final Logger logger = LoggerFactory.getLogger(AuthTokenFilter.class);
 
     @Autowired private JwtUtil jwtUtil;
@@ -44,10 +44,10 @@ public class AuthTokenFilter extends  OncePerRequestFilter{
         String path = request.getServletPath();
 
     // Публичные эндпоинты пропускаем
-    if (path.startsWith("/api/auth/") || path.startsWith("/ws/")) {
-        filterChain.doFilter(request, response);
-        return;
-    }
+        if (path.startsWith("/api/auth/") || path.startsWith("/ws/")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
         try {
             Cookie[] cookies = request.getCookies();
             logger.debug("AuthTokenFilter: request path={} cookiesPresent={}", path, cookies != null ? cookies.length : 0);

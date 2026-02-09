@@ -1,7 +1,6 @@
 package com.barsik.backend.security;
 
 
-import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +25,6 @@ public class JwtHandshakeInterceptor implements HandshakeInterceptor {
         if (request instanceof ServletServerHttpRequest servletServerHttpRequest) {
             HttpServletRequest servletRequest = servletServerHttpRequest.getServletRequest();
 
-            // Получить cookie из HTTP запроса
             Cookie[] cookies = servletRequest.getCookies();
             String jwt = null;
             if (cookies != null) {
@@ -37,28 +35,20 @@ public class JwtHandshakeInterceptor implements HandshakeInterceptor {
                     }
                 }
             }
-            ///для тестов в постман
-            if (jwt == null) {
-                List<String> authHeaders = request.getHeaders().get("Authorization");
-                if (authHeaders != null && !authHeaders.isEmpty()) {
-                    jwt = authHeaders.get(0).replace("Bearer ", "");
-                }
-            }
 
-            // Валидация JWT токена
+            //Валидация
             if (jwt == null || !jwtUtil.validateJwtToken(jwt)) {
-                // Токен отсутствует или не валиден - отклоняем handshake
                 return false;
             }
 
-            // Извлечь имя пользователя из токена
             Long userId = jwtUtil.getUserIdFromToken(jwt);
-            // Сохранить его в атрибуты сессии WebSocket
+
+            //Сохранить в атрибуты сессии WebSocket
             attributes.put("userId", userId);
 
-            return true; // Разрешаем handshake, токен валиден
+            return true;
         }
-        return false; // Не ServletServerHttpRequest - отклоняем
+        return false;
     }
 
     @Override

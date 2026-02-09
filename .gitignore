@@ -1,6 +1,6 @@
 include /barsik/.gitignore
 
-
+*.txt
 
 # Compiled class file
 *.class

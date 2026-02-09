@@ -1,5 +1,4 @@
 services:
-
   postgres:
     image: postgres:latest
     container_name: postgres_container
@@ -31,28 +30,8 @@ services:
       retries: 5
     restart: unless-stopped
     tty: true
-    #stdin_open: true
-  #mysql:
-  #  image: mysql:latest
-  #  restart: unless-stopped
-  #  environment:
-  #    MYSQL_DATABASE: barsikdb
-  #    MYSQL_ROOT_PASSWORD: verysecret
-  #    MYSQL_USER: test_user1
-  #    MYSQL_PASSWORD: 1234
-  #  ports:
-  #    - "3306:3306"
-  #  volumes:
-  #    - data_db:/var/lib/mysql
-  #  healthcheck:
-  #    test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -pverysecret"]
-  #    interval: 10s
-  #    timeout: 5s
-  #    retries: 10
-  #    start_period: 30s
-    
   app:
-    build: .
+    build: ./backend/.
     container_name: backend
     ports: 
       - "8080:8080"
@@ -63,6 +42,18 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/barsikdb
       SPRING_DATASOURCE_USERNAME: postgres_user
       SPRING_DATASOURCE_PASSWORD: 123
+  web:
+    build: ../Barsik-FE/.
+    ports:
+      - "3000:3000"
+    depends_on:
+      - app
+    volumes:
+     - .:/App
+     - ./node_modules:/App/node_modules
+    stdin_open: true
+    tty: true
+    command: npm start
 
 volumes:
   pgdata:

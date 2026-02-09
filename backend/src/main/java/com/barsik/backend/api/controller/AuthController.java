@@ -4,7 +4,6 @@ package com.barsik.backend.api.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
@@ -40,15 +39,7 @@ public class AuthController {
     @Autowired private AuthenticationManager authenticationManager;
     @Autowired private UserService userService;
     @Autowired private UserRepository userRepository;
-    @Autowired private JwtUtil jwtUtil;
-    @Value("${app.cookie.secure:false}")
-    private boolean cookieSecure;
-    @Value("${app.cookie.sameSite:Lax}")
-    private String cookieSameSite;
-
-
-
-    
+    @Autowired private JwtUtil jwtUtil;   
 
     /*
      * Sign in — авторизация существующего пользователя; Sign up — регистрация нового пользователя
@@ -77,10 +68,10 @@ public class AuthController {
         String jwt = jwtUtil.generateToken(userDetails.getUsername(), user.getId(), roles);
         ResponseCookie jwtCookie = ResponseCookie.from("JWT_TOKEN", jwt)
             .httpOnly(true)
-            .secure(cookieSecure)
+            .secure(true)
             .path("/")
             .maxAge(86400)
-            .sameSite(cookieSameSite)
+            .sameSite("Strict")
             .build();
 
     response.addHeader(HttpHeaders.SET_COOKIE, jwtCookie.toString());
@@ -111,8 +102,8 @@ public class AuthController {
         ResponseCookie cookie = ResponseCookie.from("JWT_TOKEN", "")
             .path("/")
             .httpOnly(true)
-            .secure(cookieSecure)
-            .sameSite(cookieSameSite)
+            .secure(true)
+            .sameSite("Strict")
             .maxAge(0)
             .build();
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());

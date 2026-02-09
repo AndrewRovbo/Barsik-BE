@@ -27,8 +27,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Autowired JwtHandshakeInterceptor jwtHandshakeInterceptor;
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
-        config.enableSimpleBroker("/queue", "/topic");
-        config.setApplicationDestinationPrefixes("/app");
+        config.enableSimpleBroker("/queue", "/topic"); //Каналы для подписок
+        config.setApplicationDestinationPrefixes("/app");//Префикс для отправки сообщений
+        config.setUserDestinationPrefix("/user"); //для личных сообщений
     }
 
     @Override
