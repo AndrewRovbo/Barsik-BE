@@ -15,7 +15,7 @@ import com.barsik.backend.repository.PetRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 
-@Transactional
+
 @Service
 public class PetService {
 
@@ -27,6 +27,7 @@ public class PetService {
         .map(val -> val == null ? "" : val.trim().toLowerCase().replaceAll("[^a-z0-9]", ""))
         .collect(Collectors.joining("-"));
     };
+
 
     public Pet findPetBySlug(Long ownerId, String slug) {
         List<Pet> pets = petRepository.findByOwnerIdPets(ownerId);
@@ -41,6 +42,7 @@ public class PetService {
     }
 
 
+    @Transactional
     public Pet savePet(Owner owner, PetRequest savePet) {
         Pet pet = new Pet();
 
@@ -57,6 +59,7 @@ public class PetService {
         return petRepository.save(pet);
     }
 
+    @Transactional
     public void deletePetByOwner(Long ownerId, String slug){
         Pet deletePet = findPetBySlug(ownerId, slug);
         petRepository.deleteById(deletePet.getId());
@@ -64,6 +67,7 @@ public class PetService {
 
 //delete for admin
 
+    @Transactional
     public void updatePetByOwner(Long ownerId, String slug, PetRequest petUpdate){
         Pet pet = findPetBySlug(ownerId, slug);
 
@@ -79,7 +83,4 @@ public class PetService {
     
     //public void getPet(){};
 
-
-
-    
 }

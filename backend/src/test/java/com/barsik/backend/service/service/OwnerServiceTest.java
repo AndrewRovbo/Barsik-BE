@@ -9,7 +9,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -90,21 +89,6 @@ public class OwnerServiceTest {
         verify(ownerRepository).save(existOwner);
     }
 
-   
-    @Test 
-    public void deleteOwner_ShouldRemoveLinkAndDelete(){
-        Long userId = 1L;
-        User user = new User();
-        Owner owner = new Owner(user);
-        owner.setUserId(userId);
-        user.setOwner(owner);
-
-        when(ownerRepository.findById(userId)).thenReturn(Optional.of(owner));
-        ownerService.deleteOwner(userId);
-        assertNull(user.getOwner());
-
-        verify(ownerRepository).delete(owner);
-    }
 
     @Test 
     public void deleteOwner_ShouldRemoveLinkAndDelete(){
