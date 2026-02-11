@@ -41,7 +41,7 @@ public class PetService {
     }
 
 
-    public Pet savePet(Owner owner, PetRequest savePet) {//dto!!
+    public Pet savePet(Owner owner, PetRequest savePet) {
         Pet pet = new Pet();
 
         pet.setName(savePet.getName());

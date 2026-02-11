@@ -1,5 +1,29 @@
 package com.barsik.backend.service;
 
+import java.lang.reflect.Field;
+import java.time.LocalDateTime;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
 import com.barsik.backend.api.DTO.request.RegistrationRequestLong;
 import com.barsik.backend.api.DTO.request.UserUpdateRequest;
 import com.barsik.backend.entity.Owner;
@@ -8,22 +32,11 @@ import com.barsik.backend.entity.User;
 import com.barsik.backend.repository.OwnerRepository;
 import com.barsik.backend.repository.SitterRepository;
 import com.barsik.backend.repository.UserRepository;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.*;
-
-import org.springframework.security.crypto.password.PasswordEncoder;
-
-import java.lang.reflect.Field;
-import java.time.LocalDateTime;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
 /**
  * Unit tests for UserService with reflection-based id setting to avoid requiring a public setId method.
  */
+@ExtendWith(MockitoExtension.class)
 class UserServiceTest {
 
     @Mock
