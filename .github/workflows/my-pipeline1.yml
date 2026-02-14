@@ -21,4 +21,4 @@ jobs:
       run: mvn test
       
     - name: Info type
-      run: echo "all tests passed on commit ${{ github.sha }} "
+      run: echo "all tests passed on commit${{ github.sha }} "
