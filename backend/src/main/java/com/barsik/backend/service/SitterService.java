@@ -61,6 +61,7 @@ public class SitterService {
         Specification<Sitter> spec = filterByCriteria(experienceKeyword, minRating, isVerified);
         return sitterRepository.findAll(spec);
     }
+    
     public static Specification<Sitter> filterByCriteria(String experienceKeyword, BigDecimal minRating,
                                                         Boolean isVerified) {
         return (root, query, cb) -> {
