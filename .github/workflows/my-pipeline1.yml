@@ -10,7 +10,11 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    
+    - name: debug
+      run: |
+        pwd
+        ls -la
+        find . -name "pom.xml"- type f
     - name: Set up JDK 21
       uses: actions/setup-java@v4
       with:
@@ -18,7 +22,7 @@ jobs:
         distribution: 'temurin'
         cache: maven
     - name: Test with Maven
-      run: mvn test
+      run: cd ./backend && mvn test
       
     - name: Info type
       run: echo "all tests passed on commit${{ github.sha }} "
