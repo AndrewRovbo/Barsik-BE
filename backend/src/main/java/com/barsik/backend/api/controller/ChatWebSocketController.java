@@ -6,7 +6,6 @@ import java.security.Principal;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Controller;
@@ -27,24 +26,29 @@ public class ChatWebSocketController {
 
     @MessageMapping("/chat.sendMessage")
     public void sendMessage(@Payload ChatMessageDTO chatMessage, Principal principal) {
+
         UsernamePasswordAuthenticationToken auth = (UsernamePasswordAuthenticationToken) principal;
         CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
         Long senderId = userDetails.getUserId();
+        
         chatMessage.setSenderId(senderId);
-        // 2. БИЗНЕС-ЛОГИКА: Сохраняем в БД
-        // Этот метод должен вернуть DTO с уже проставленным ID чата (если создался новый) и временем
+        
         ChatMessageDTO saved = chatMessageService.sendMessageAndCreateChatIfNotExist(chatMessage);
         
-        // 3. ОТПРАВКА: Шлем сообщение в топик конкретного чата
-        // Подписчики (и отправитель, и получатель) слушают /topic/chat.{id}
-        messagingTemplate.convertAndSend(
-            "/queue/messages" + saved.getChatId(),//  "/topic/chat." + saved.getChatId(), 
+        messagingTemplate.convertAndSendToUser(
+            String.valueOf(saved.getRecepientId()),
+            "/queue/messages",
             saved
         );
-        // ОПЦИОНАЛЬНО: Если вы хотите делать глобальные уведомления ("У вас новое сообщение"),
-        // можно дополнительно отправить уведомление в личку получателю,
-        // но само сообщение чата лучше слать в топик чата.
+
+        // Если у отправителя открыто несколько вкладок браузера, чтобы сообщение появилось везде:
+        messagingTemplate.convertAndSendToUser(
+            String.valueOf(senderId),
+            "/queue/messages",
+            saved
+        );
     }
+    /*
     @MessageMapping("/chat.confirmReceived")
     public void confirmReceived(@Payload Long messageId) {
         chatMessageService.markReceived(messageId);
@@ -79,5 +83,5 @@ public class ChatWebSocketController {
     //@PreAuthorize("hasRole('ADMIN')")
     public ChatMessageDTO broadcastToOnline(ChatMessageDTO message) {
         return message;
-    }
+    }*/
 }

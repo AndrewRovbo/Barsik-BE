@@ -1,15 +1,12 @@
 package com.barsik.backend.entity;
 
 import java.math.BigDecimal;
-import java.util.List;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.MapsId;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
@@ -60,8 +57,8 @@ public class Sitter {
     //@OneToMany(mappedBy = "sitter", cascade = CascadeType.ALL, orphanRemoval = true)
     //private List<SitterService> offeredServices;
 
-    @OneToMany(mappedBy = "sitter", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<SitterAvailability> availability;
+    //@OneToMany(mappedBy = "sitter", cascade = CascadeType.ALL, orphanRemoval = true)
+    //private List<SitterAvailability> availability;
 
     //@OneToMany(mappedBy = "sitter", cascade = CascadeType.ALL, orphanRemoval = true)
     //private List<Booking> bookingsTaken;

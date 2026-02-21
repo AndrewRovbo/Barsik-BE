@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.http.server.ServletServerHttpRequest;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.server.HandshakeInterceptor;
@@ -19,6 +20,9 @@ public class JwtHandshakeInterceptor implements HandshakeInterceptor {
 
    
     @Autowired JwtUtil jwtUtil;
+    @Autowired 
+    private CustomUserDetailsService customUserDetailsService;
+
     @Override
     public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response, 
                                    WebSocketHandler wsHandler, Map<String, Object> attributes) throws Exception {
@@ -36,16 +40,20 @@ public class JwtHandshakeInterceptor implements HandshakeInterceptor {
                 }
             }
 
-            //Валидация
             if (jwt == null || !jwtUtil.validateJwtToken(jwt)) {
                 return false;
             }
 
-            Long userId = jwtUtil.getUserIdFromToken(jwt);
-
-            //Сохранить в атрибуты сессии WebSocket
-            attributes.put("userId", userId);
-
+            //Long userId = jwtUtil.getUserIdFromToken(jwt);
+            String username = jwtUtil.getUserEmailFromToken(jwt);
+            try{
+                CustomUserDetails userDetails = customUserDetailsService.loadUserByUsername(username); 
+                attributes.put("USER_DETAILS", userDetails); 
+            }
+            catch(UsernameNotFoundException ex) {
+                return false;
+            }
+            
             return true;
         }
         return false;
