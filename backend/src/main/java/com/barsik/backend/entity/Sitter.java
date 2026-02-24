@@ -1,11 +1,15 @@
 package com.barsik.backend.entity;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.MapsId;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
@@ -38,6 +42,17 @@ public class Sitter {
     @JoinColumn(name = "user_id")
     private User user;
 
+
+
+    @ManyToMany
+    @JoinTable(
+        name = "sitter_service_mapping",
+        joinColumns = @JoinColumn(name = "sitter_id"),
+        inverseJoinColumns = @JoinColumn(name = "service_id")
+    )
+    private List<PetService> services = new ArrayList<>();
+
+
     public Sitter() {
     }
 
@@ -53,7 +68,7 @@ public class Sitter {
     
     private void setIsVerified(Boolean isVerified) { this.isVerified = isVerified; }
 
-
+    
     //@OneToMany(mappedBy = "sitter", cascade = CascadeType.ALL, orphanRemoval = true)
     //private List<SitterService> offeredServices;
 
