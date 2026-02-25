@@ -24,7 +24,7 @@ public class SecurityUtil {
         }
 
 
-         System.err.println("NOT ID");
+        System.err.println("NOT ID");
         throw new IllegalStateException("User details do not contain userId");
     }
 }

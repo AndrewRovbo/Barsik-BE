@@ -1,15 +1,17 @@
 package com.barsik.backend.api.controller;
 
 
+import java.security.Principal;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Controller;
 
 import com.barsik.backend.api.DTO.ChatMessageDTO;
+import com.barsik.backend.security.CustomUserDetails;
 import com.barsik.backend.service.ChatMessageService;
 
 
@@ -23,15 +25,30 @@ public class ChatWebSocketController {
     private ChatMessageService chatMessageService;
 
     @MessageMapping("/chat.sendMessage")
-    public void sendMessage(@Payload ChatMessageDTO chatMessage) {
+    public void sendMessage(@Payload ChatMessageDTO chatMessage, Principal principal) {
+
+        UsernamePasswordAuthenticationToken auth = (UsernamePasswordAuthenticationToken) principal;
+        CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
+        Long senderId = userDetails.getUserId();
+        
+        chatMessage.setSenderId(senderId);
+        
         ChatMessageDTO saved = chatMessageService.sendMessageAndCreateChatIfNotExist(chatMessage);
-        Long recipientId = chatMessage.getRecepientId();
+        
         messagingTemplate.convertAndSendToUser(
-            recipientId.toString(), 
-            "/queue/messages", 
+            String.valueOf(saved.getRecepientId()),
+            "/queue/messages",
+            saved
+        );
+
+        // Если у отправителя открыто несколько вкладок браузера, чтобы сообщение появилось везде:
+        messagingTemplate.convertAndSendToUser(
+            String.valueOf(senderId),
+            "/queue/messages",
             saved
         );
     }
+    /*
     @MessageMapping("/chat.confirmReceived")
     public void confirmReceived(@Payload Long messageId) {
         chatMessageService.markReceived(messageId);
@@ -66,5 +83,5 @@ public class ChatWebSocketController {
     //@PreAuthorize("hasRole('ADMIN')")
     public ChatMessageDTO broadcastToOnline(ChatMessageDTO message) {
         return message;
-    }
+    }*/
 }

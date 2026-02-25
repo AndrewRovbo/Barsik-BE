@@ -1,15 +1,17 @@
 package com.barsik.backend.api.controller;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.barsik.backend.entity.Sitter;
+import com.barsik.backend.api.DTO.response.SitterResponseDTO;
 import com.barsik.backend.service.SitterService;
 
 
@@ -19,19 +21,20 @@ import com.barsik.backend.service.SitterService;
 public class SitterController {
 
     @Autowired private SitterService sitterService;
-    
-    /*
+
     @GetMapping("/search")
-    public ResponseEntity<Page<ChatMessageDTO>> seacrhSittersWirhNoFilters(@RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size){
-        return ResponseEntity.ok().build();
-    };
-*/
-    @GetMapping("/search")
-    public List<Sitter> searchSitters(
+    public ResponseEntity<Page<SitterResponseDTO>> searchSitters(
+            @RequestParam(required = false) String serviceType,
             @RequestParam(required = false) String experienceKeyword,
-            @RequestParam(required = false) BigDecimal minRating, @RequestParam(required = false) Boolean isVerified
-            ) {
-        return sitterService.searchSitters(experienceKeyword, minRating, isVerified);
+            @RequestParam(required = false) BigDecimal minRating, 
+            @RequestParam(required = false) Boolean isVerified,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size
+    ) {
+        Page<SitterResponseDTO> results = sitterService.searchSitters(
+                serviceType, experienceKeyword, minRating, isVerified, PageRequest.of(page, size)
+        );
+        return ResponseEntity.ok(results);
     }
+
 }
